@@ -1,0 +1,16 @@
+{
+  "sourceQueueConfig": {
+    "address": [
+      "SOURCE_QUEUE"
+    ],
+    "group": "V1Suggestor",
+    "topic": "NativeCmsMetadataPublicationEvents",
+    "queue": "kafka",
+    "concurrentProcessing": true
+  },
+  "destinationQueueConfig": {
+    "address": "DESTINATION_QUEUE",
+    "topic": "ConceptSuggestions",
+    "queue": "kafka"
+  }
+}
