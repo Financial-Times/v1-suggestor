@@ -10,7 +10,7 @@ import (
 	"fmt"
 )
 
-// ParseConfig opens the file at configFileName and unmarshals it into an AppConfig.
+// buildConfig reads the configuration from the system environment and build the app config
 func buildConfig() AppConfig {
 	concurrentProcessingString := os.Getenv("SRC_CONCURRENT_PROCESSING")
 	srcConcurrentProcessing, err := strconv.ParseBool(concurrentProcessingString)
