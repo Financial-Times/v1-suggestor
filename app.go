@@ -7,38 +7,26 @@ import (
 	"sync"
 	"syscall"
 
-	"flag"
-	"log"
-
 	"github.com/Financial-Times/message-queue-go-producer/producer"
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
-	"github.com/kr/pretty"
 	"github.com/gorilla/mux"
+	"github.com/kr/pretty"
 )
 
-var configFileName = flag.String("config", "", "Path to configuration file")
 var appConfig AppConfig
 var messageProducer producer.MessageProducer
 
 func main() {
 	initLogs(os.Stdout, os.Stdout, os.Stderr)
-	flag.Parse()
-
-	appConfig, err := ParseConfig(*configFileName)
-	if err != nil {
-		log.Printf("Cannot load configuration: [%v]", err)
-		return
-	}
-
+	appConfig = buildConfig()
 	infoLogger.Printf("Using configuration: %# v", pretty.Formatter(appConfig))
-	
+
 	go enableHealthchecks()
 	initializeProducer()
 	readMessages()
 }
 
 func enableHealthchecks() {
-
 	healthcheck := &Healthcheck{http.Client{}, appConfig}
 	router := mux.NewRouter()
 	router.HandleFunc("/__health", healthcheck.checkHealth())

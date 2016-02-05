@@ -16,9 +16,8 @@ RUN apk add --update bash \
   && go test ./... \
   && go build \
   && mv v1-suggestor /app \
-  && mv config.json /config.json \
   && apk del go git bzr \
   && rm -rf $GOPATH /var/cache/apk/*
 
 ENTRYPOINT [ "/bin/sh", "-c" ]
-CMD [ "/startup.sh" ] 
+CMD [ "./app" ] 
