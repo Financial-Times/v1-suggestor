@@ -1,7 +1,6 @@
 FROM alpine:3.3
 
 ADD *.go /v1-suggestor/
-ADD startup.sh /
 
 RUN apk add --update bash \
   && apk --update add git bzr \
