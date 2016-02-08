@@ -1,7 +1,6 @@
-FROM alpine
+FROM alpine:3.3
 
 ADD *.go /v1-suggestor/
-ADD config.json.template /v1-suggestor/config.json
 ADD startup.sh /
 
 RUN apk add --update bash \
@@ -19,5 +18,4 @@ RUN apk add --update bash \
   && apk del go git bzr \
   && rm -rf $GOPATH /var/cache/apk/*
 
-ENTRYPOINT [ "/bin/sh", "-c" ]
-CMD [ "./app" ] 
+CMD [ "/app" ] 
