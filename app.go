@@ -10,34 +10,40 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"encoding/xml"
-	"fmt"
-	"strings"
 
 	"github.com/Financial-Times/message-queue-go-producer/producer"
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
 	"github.com/Financial-Times/v1-suggestor/model"
+	"github.com/Financial-Times/v1-suggestor/service"
 	"github.com/gorilla/mux"
 	"github.com/kr/pretty"
 )
 
 var appConfig AppConfig
 var messageProducer producer.MessageProducer
+var taxonomyHandlers = make(map[string]service.TaxonomyService)
 
 func main() {
 	initLogs(os.Stdout, os.Stdout, os.Stderr)
 	appConfig = buildConfig()
 	infoLogger.Printf("Using configuration: %# v", pretty.Formatter(appConfig))
 
-	go enableHealthchecks()
+	setupTaxonomyHandlers()
+
+	go enableHealthChecks()
 	initializeProducer()
 	readMessages()
 }
 
-func enableHealthchecks() {
-	healthcheck := &Healthcheck{http.Client{}, appConfig}
+func setupTaxonomyHandlers() {
+	taxonomyHandlers["subjects"] = service.SubjectService{"subjects"}
+}
+
+func enableHealthChecks() {
+	healthCheck := &Healthcheck{http.Client{}, appConfig}
 	router := mux.NewRouter()
-	router.HandleFunc("/__health", healthcheck.checkHealth())
-	router.HandleFunc("/__gtg", healthcheck.gtg)
+	router.HandleFunc("/__health", healthCheck.checkHealth())
+	router.HandleFunc("/__gtg", healthCheck.gtg)
 	http.Handle("/", router)
 	err := http.ListenAndServe(":8080", nil)
 	if err != nil {
@@ -70,75 +76,40 @@ func readMessages() {
 }
 
 func handleMessage(msg consumer.Message) {
-	metadataXML, err := base64.StdEncoding.DecodeString("base64bla")
+	var metadataPublishEvent model.MetadataPublishEvent
+	err := json.Unmarshal([]byte(msg.Body), &metadataPublishEvent)
 	if err != nil {
-		fmt.Printf("Error decoding body for uuid  %s", err.Error())
+		errorLogger.Printf("Cannot unmarshal message body: %s", err.Error())
+		return
+	}
+
+	metadataXML, err := base64.StdEncoding.DecodeString(metadataPublishEvent.Value)
+	if err != nil {
+		errorLogger.Printf("Error decoding body for uuid:  %s", err.Error())
+		return
 	}
 
 	metadata := model.ContentRef{}
-	err = xml.Unmarshal([]byte(metadataXML), &metadata)
+	err = xml.Unmarshal(metadataXML, &metadata)
 	if err != nil {
-		panic(err)
-	}
-	//fmt.Printf("Tags: %# v", pretty.Formatter(metadata))
-
-	var subjects []model.Tag
-	for _, value := range metadata.TagHolder.Tags {
-		if strings.EqualFold(value.Term.Taxonomy, "subjects") {
-			subjects = append(subjects, value)
-		}
+		errorLogger.Printf("Error unmarshalling metadata XML: %s", err.Error())
 	}
 
-	var conceptSuggestions []model.ConceptSuggestion
-	for _, value := range subjects {
-		var scores []model.Score
-		relevance := model.Score{
-			ScoringSystem: "http://api.ft.com/scoringsystem/FT-RELEVANCE-SYSTEM",
-			Value:         float32(value.TagScore.Relevance) / float32(100.0),
-		}
-		confidence := model.Score{
-			ScoringSystem: "http://api.ft.com/scoringsystem/FT-CONFIDENCE-SYSTEM",
-			Value:         float32(value.TagScore.Confidence) / float32(100.0),
-		}
-		scores = append(scores, relevance)
-		scores = append(scores, confidence)
-
-		provenance := model.Provenance{Scores: scores}
-
-		var provenances []model.Provenance
-		provenances = append(provenances, provenance)
-
-		var types []string
-		types = append(types, "http://www.ft.com/ontology/thing/Subject")
-
-		thing := model.Thing{
-			Id:        "generate from CMR term ID",
-			PrefLabel: value.Term.CanonicalName,
-			Types:     types,
-		}
-
-		suggestion := model.Suggestion{
-			Thing:      thing,
-			Provenance: provenances,
-		}
-
-		var suggestions []model.Suggestion
-		suggestions = append(suggestions, suggestion)
-
-		conceptsuggestion := model.ConceptSuggestion{
-			UUID:        "uuid",
-			Suggestions: suggestions,
-		}
-
-		conceptSuggestions = append(conceptSuggestions, conceptsuggestion)
+	var suggestions []model.Suggestion
+	for key, value := range taxonomyHandlers {
+		infoLogger.Printf("Processing taxonomy %s", key)
+		suggestions = append(suggestions, value.BuildSuggestions(metadata)...)
 	}
 
-	fmt.Printf("ConceptSuggestions: %# v", pretty.Formatter(conceptSuggestions))
+	conceptSuggestion := model.ConceptSuggestion{
+		UUID:        metadataPublishEvent.UUID,
+		Suggestions: suggestions,
+	}
 
-	marshalledSuggestions, err := json.Marshal(conceptSuggestions)
+	marshalledSuggestions, err := json.Marshal(conceptSuggestion)
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Printf("Suggestions: \n %s", string(marshalledSuggestions))
+	infoLogger.Printf("Suggestions: \n %s", string(marshalledSuggestions))
 }
