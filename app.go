@@ -17,6 +17,7 @@ import (
 	"github.com/Financial-Times/v1-suggestor/service"
 	"github.com/gorilla/mux"
 	"github.com/kr/pretty"
+	"github.com/twinj/uuid"
 )
 
 var appConfig AppConfig
@@ -76,40 +77,59 @@ func readMessages() {
 }
 
 func handleMessage(msg consumer.Message) {
+	infoLogger.Printf("Incoming headers: \n %v", msg.Headers)
 	var metadataPublishEvent model.MetadataPublishEvent
 	err := json.Unmarshal([]byte(msg.Body), &metadataPublishEvent)
 	if err != nil {
-		errorLogger.Printf("Cannot unmarshal message body: %s", err.Error())
+		errorLogger.Printf("Cannot unmarshal message body:[%v]", err.Error())
 		return
 	}
 
+	infoLogger.Printf("Processing metadata publish event for uuid [%s]", metadataPublishEvent.UUID)
+
 	metadataXML, err := base64.StdEncoding.DecodeString(metadataPublishEvent.Value)
 	if err != nil {
-		errorLogger.Printf("Error decoding body for uuid:  %s", err.Error())
+		errorLogger.Printf("Error decoding body for uuid:  [%s]", err.Error())
 		return
 	}
 
 	metadata := model.ContentRef{}
 	err = xml.Unmarshal(metadataXML, &metadata)
 	if err != nil {
-		errorLogger.Printf("Error unmarshalling metadata XML: %s", err.Error())
+		errorLogger.Printf("Error unmarshalling metadata XML: [%v]", err.Error())
+		return
 	}
 
 	var suggestions []model.Suggestion
 	for key, value := range taxonomyHandlers {
-		infoLogger.Printf("Processing taxonomy %s", key)
+		infoLogger.Printf("Processing taxonomy [%s]", key)
 		suggestions = append(suggestions, value.BuildSuggestions(metadata)...)
 	}
 
-	conceptSuggestion := model.ConceptSuggestion{
-		UUID:        metadataPublishEvent.UUID,
-		Suggestions: suggestions,
-	}
+	conceptSuggestion := model.ConceptSuggestion{metadataPublishEvent.UUID, suggestions}
 
 	marshalledSuggestions, err := json.Marshal(conceptSuggestion)
 	if err != nil {
-		panic(err)
+		errorLogger.Printf("Error marshalling the concept suggestions: [%v]", err.Error())
+		return
 	}
 
-	infoLogger.Printf("Suggestions: \n %s", string(marshalledSuggestions))
+	var headers = buildConceptSuggestionsHeader(msg.Headers)
+	err = messageProducer.SendMessage(conceptSuggestion.UUID, producer.Message{headers, string(marshalledSuggestions)})
+	if err != nil {
+		errorLogger.Printf("Error sending concept suggestion to queue: [%v]", err.Error())
+	}
+
+	infoLogger.Printf("Sent suggestion message with message ID [%s]to queue.", headers["Message-Id"])
+}
+
+func buildConceptSuggestionsHeader(publishEventHeaders map[string]string) map[string]string {
+	return map[string]string{
+		"Message-Id":        uuid.NewV4().String(),
+		"Message-Type":      "concept-suggestions",
+		"Content-Type":      publishEventHeaders["Content-Type"],
+		"X-Request-Id":      publishEventHeaders["X-Request-Id"],
+		"Origin-System-Id":  publishEventHeaders["Origin-System-Id"],
+		"Message-Timestamp": publishEventHeaders["Message-Timestamp"],
+	}
 }
