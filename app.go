@@ -37,7 +37,7 @@ func main() {
 }
 
 func setupTaxonomyHandlers() {
-	taxonomyHandlers["subjects"] = service.SubjectService{"subjects"}
+	taxonomyHandlers["subjects"] = service.SubjectService{HandledTaxonomy: "subjects"}
 }
 
 func enableHealthChecks() {
@@ -105,7 +105,7 @@ func handleMessage(msg consumer.Message) {
 		suggestions = append(suggestions, value.BuildSuggestions(metadata)...)
 	}
 
-	conceptSuggestion := model.ConceptSuggestion{metadataPublishEvent.UUID, suggestions}
+	conceptSuggestion := model.ConceptSuggestion{UUID: metadataPublishEvent.UUID, Suggestions: suggestions}
 
 	marshalledSuggestions, err := json.Marshal(conceptSuggestion)
 	if err != nil {
@@ -114,7 +114,8 @@ func handleMessage(msg consumer.Message) {
 	}
 
 	var headers = buildConceptSuggestionsHeader(msg.Headers)
-	err = messageProducer.SendMessage(conceptSuggestion.UUID, producer.Message{headers, string(marshalledSuggestions)})
+	message := producer.Message{Headers: headers, Body: string(marshalledSuggestions)}
+	err = messageProducer.SendMessage(conceptSuggestion.UUID, message)
 	if err != nil {
 		errorLogger.Printf("Error sending concept suggestion to queue: [%v]", err.Error())
 	}

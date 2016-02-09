@@ -8,8 +8,9 @@ import (
 
 	"github.com/Financial-Times/message-queue-go-producer/producer"
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
-	"github.com/golang/go/src/pkg/strconv"
-	"github.com/golang/go/src/pkg/strings"
+
+	"strconv"
+	"strings"
 )
 
 // buildConfig reads the configuration from the system environment and build the app config

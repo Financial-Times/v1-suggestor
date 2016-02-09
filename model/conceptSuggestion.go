@@ -1,5 +1,6 @@
 package model
 
+// ConceptSuggestion models the suggestions as it will be written on the queue
 type ConceptSuggestion struct {
 	UUID        string       `json:"uuid"`
 	Suggestions []Suggestion `json:"suggestions"`
@@ -11,7 +12,7 @@ type Suggestion struct {
 }
 
 type Thing struct {
-	Id        string   `json:"id"`
+	ID        string   `json:"id"`
 	PrefLabel string   `json:"prefLabel"`
 	Types     []string `json:"types"`
 }

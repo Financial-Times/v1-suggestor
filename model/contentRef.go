@@ -1,5 +1,6 @@
 package model
 
+// ContentRef models the data as it comes from the metadata publishing event
 type ContentRef struct {
 	TagHolder Tags `xml:"tags"`
 }
@@ -16,7 +17,7 @@ type Tag struct {
 type Term struct {
 	CanonicalName string `xml:"canonicalName"`
 	Taxonomy      string `xml:"taxonomy,attr"`
-	Id            string `xml:"id,attr"`
+	ID            string `xml:"id,attr"`
 }
 
 type TagScore struct {
