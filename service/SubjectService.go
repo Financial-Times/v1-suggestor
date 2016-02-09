@@ -33,7 +33,7 @@ func transformScore(score int) float32 {
 }
 
 func generateId(cmrTermId string) string {
-	return "TODO"
+	return NewNameUUIDFromBytes([]byte(cmrTermId)).String()
 }
 
 func extractTags(wantedTagName string, contentRef model.ContentRef) []model.Tag {

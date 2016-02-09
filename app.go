@@ -77,7 +77,6 @@ func readMessages() {
 }
 
 func handleMessage(msg consumer.Message) {
-	infoLogger.Printf("Incoming headers: \n %v", msg.Headers)
 	var metadataPublishEvent model.MetadataPublishEvent
 	err := json.Unmarshal([]byte(msg.Body), &metadataPublishEvent)
 	if err != nil {
