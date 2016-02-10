@@ -13,18 +13,34 @@ type SubjectService struct {
 
 const subjectURI = "http://www.ft.com/ontology/thing/Subject"
 
+// BuildSuggestions builds a list of subject suggestions from a ContentRef.
+// Returns an empty array in case no subject annotations are found
 func (subjectService SubjectService) BuildSuggestions(contentRef model.ContentRef) []model.Suggestion {
 	subjects := extractTags(subjectService.HandledTaxonomy, contentRef)
 
-	var suggestions []model.Suggestion
+	suggestions := []model.Suggestion{}
 	for _, value := range subjects {
-		relevance := model.Score{RelevanceURI, transformScore(value.TagScore.Relevance)}
-		confidence := model.Score{ConfidenceURI, transformScore(value.TagScore.Confidence)}
+		relevance := model.Score{
+			ScoringSystem: RelevanceURI,
+			Value:         transformScore(value.TagScore.Relevance),
+		}
+		confidence := model.Score{
+			ScoringSystem: ConfidenceURI,
+			Value:         transformScore(value.TagScore.Confidence),
+		}
 
-		provenances := []model.Provenance{model.Provenance{[]model.Score{relevance, confidence}}}
-		thing := model.Thing{generateID(value.Term.ID), value.Term.CanonicalName, []string{subjectURI}}
+		provenances := []model.Provenance{
+			model.Provenance{
+				Scores: []model.Score{relevance, confidence},
+			},
+		}
+		thing := model.Thing{
+			ID:        generateID(value.Term.ID),
+			PrefLabel: value.Term.CanonicalName,
+			Types:     []string{subjectURI},
+		}
 
-		suggestions = append(suggestions, model.Suggestion{thing, provenances})
+		suggestions = append(suggestions, model.Suggestion{Thing: thing, Provenance: provenances})
 	}
 	return suggestions
 }

@@ -1,6 +1,6 @@
 package model
 
-// ConceptSuggestion models the suggestions as it will be written on the queue
+// ConceptSuggestion models the suggestion as it will be written on the queue
 type ConceptSuggestion struct {
 	UUID        string       `json:"uuid"`
 	Suggestions []Suggestion `json:"suggestions"`
