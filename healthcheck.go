@@ -8,12 +8,15 @@ import (
 	"net/http"
 
 	"github.com/Financial-Times/go-fthealth"
+	"github.com/Financial-Times/message-queue-go-producer/producer"
+	"github.com/Financial-Times/message-queue-gonsumer/consumer"
 )
 
 // Healthcheck offers methods to measure application health.
 type Healthcheck struct {
-	client http.Client
-	config AppConfig
+	client   http.Client
+	srcConf  consumer.QueueConfig
+	destConf producer.MessageProducerConfig
 }
 
 func (h *Healthcheck) checkHealth() func(w http.ResponseWriter, r *http.Request) {
@@ -45,33 +48,39 @@ func (h *Healthcheck) messageQueueProxyReachable() fthealth.Check {
 
 func (h *Healthcheck) checkAggregateMessageQueueProxiesReachable() error {
 
-	addresses := h.config.SourceQueueConfig.Addrs
 	errMsg := ""
-	for i := 0; i < len(addresses); i++ {
-		error := h.checkMessageQueueProxyReachable(addresses[i])
-		if error == nil {
+
+	for i := 0; i < len(h.srcConf.Addrs); i++ {
+		err := h.checkMessageQueueProxyReachable(h.srcConf.Addrs[i], h.srcConf.Topic, h.srcConf.AuthorizationKey, h.srcConf.Queue)
+		if err == nil {
 			return nil
 		}
-		errMsg = errMsg + fmt.Sprintf("For %s there is an error %v \n", addresses[i], error.Error())
+		errMsg = errMsg + fmt.Sprintf("For %s there is an error %v \n", h.srcConf.Addrs[i], err.Error())
 	}
+
+	err := h.checkMessageQueueProxyReachable(h.destConf.Addr, h.destConf.Topic, h.destConf.Authorization, h.destConf.Queue)
+	if err == nil {
+		return nil
+	}
+	errMsg = errMsg + fmt.Sprintf("For %s there is an error %v \n", h.destConf.Addr, err.Error())
 
 	return errors.New(errMsg)
 
 }
 
-func (h *Healthcheck) checkMessageQueueProxyReachable(address string) error {
-	req, err := http.NewRequest("GET", address + "/topics", nil)
+func (h *Healthcheck) checkMessageQueueProxyReachable(address string, topic string, authKey string, queue string) error {
+	req, err := http.NewRequest("GET", address+"/topics", nil)
 	if err != nil {
 		warnLogger.Printf("Could not connect to proxy: %v", err.Error())
 		return err
 	}
 
-	if len(h.config.SourceQueueConfig.AuthorizationKey) > 0 {
-		req.Header.Add("Authorization", h.config.SourceQueueConfig.AuthorizationKey)
+	if len(authKey) > 0 {
+		req.Header.Add("Authorization", authKey)
 	}
 
-	if len(h.config.SourceQueueConfig.Queue) > 0 {
-		req.Host = h.config.SourceQueueConfig.Queue
+	if len(queue) > 0 {
+		req.Host = queue
 	}
 
 	resp, err := h.client.Do(req)
@@ -87,7 +96,7 @@ func (h *Healthcheck) checkMessageQueueProxyReachable(address string) error {
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
-	return checkIfTopicIsPresent(body, h.config.SourceQueueConfig.Topic)
+	return checkIfTopicIsPresent(body, topic)
 
 }
 
