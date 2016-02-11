@@ -1,6 +1,6 @@
 FROM alpine:3.3
 
-ADD *.go /v1-suggestor/
+ADD . /v1-suggestor/
 
 RUN apk add --update bash \
   && apk --update add git bzr \
@@ -10,8 +10,7 @@ RUN apk add --update bash \
   && mkdir -p $GOPATH/src/${REPO_PATH} \
   && mv v1-suggestor/* $GOPATH/src/${REPO_PATH} \
   && cd $GOPATH/src/${REPO_PATH} \
-  && go get \
-  && go test ./... \
+  && go get -t ./... \
   && go build \
   && mv v1-suggestor /app \
   && apk del go git bzr \
