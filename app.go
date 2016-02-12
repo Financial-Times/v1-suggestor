@@ -11,6 +11,8 @@ import (
 	"encoding/json"
 	"encoding/xml"
 
+	"time"
+
 	"github.com/Financial-Times/message-queue-go-producer/producer"
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
 	"github.com/Financial-Times/v1-suggestor/model"
@@ -23,6 +25,8 @@ import (
 
 var messageProducer producer.MessageProducer
 var taxonomyHandlers = make(map[string]service.TaxonomyService)
+
+const messageTimestampDateFormat = "2006-01-02T15:04:05.000Z"
 
 func main() {
 	app := cli.App("V1 suggestor", "A service to read V1 metadata publish event, filter it and output UP-specific metadata to the destination queue.")
@@ -201,6 +205,6 @@ func buildConceptSuggestionsHeader(publishEventHeaders map[string]string) map[st
 		"Content-Type":      publishEventHeaders["Content-Type"],
 		"X-Request-Id":      publishEventHeaders["X-Request-Id"],
 		"Origin-System-Id":  publishEventHeaders["Origin-System-Id"],
-		"Message-Timestamp": publishEventHeaders["Message-Timestamp"],
+		"Message-Timestamp": time.Now().Format(messageTimestampDateFormat),
 	}
 }
