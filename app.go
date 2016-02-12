@@ -11,6 +11,8 @@ import (
 	"encoding/json"
 	"encoding/xml"
 
+	"time"
+
 	"github.com/Financial-Times/message-queue-go-producer/producer"
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
 	"github.com/Financial-Times/v1-suggestor/model"
@@ -23,6 +25,8 @@ import (
 
 var messageProducer producer.MessageProducer
 var taxonomyHandlers = make(map[string]service.TaxonomyService)
+
+const messageTimestampDateFormat = "2006-01-02T15:04:05.000Z"
 
 func main() {
 	app := cli.App("V1 suggestor", "A service to read V1 metadata publish event, filter it and output UP-specific metadata to the destination queue.")
@@ -91,8 +95,8 @@ func main() {
 		}
 
 		initLogs(os.Stdout, os.Stdout, os.Stderr)
-		infoLogger.Printf("Using source configuration: %# v", pretty.Formatter(srcConf))
-		infoLogger.Printf("Using dest configuration: %# v", pretty.Formatter(destConf))
+		infoLogger.Printf("[Startup] Using source configuration: %# v", pretty.Formatter(srcConf))
+		infoLogger.Printf("[Startup] Using dest configuration: %# v", pretty.Formatter(destConf))
 
 		setupTaxonomyHandlers()
 		go enableHealthChecks(srcConf, destConf)
@@ -125,12 +129,12 @@ func enableHealthChecks(srcConf consumer.QueueConfig, destConf producer.MessageP
 
 func initializeProducer(config producer.MessageProducerConfig) {
 	messageProducer = producer.NewMessageProducer(config)
-	infoLogger.Printf("Producer: %# v", pretty.Formatter(messageProducer))
+	infoLogger.Printf("[Startup] Producer: %# v", pretty.Formatter(messageProducer))
 }
 
 func readMessages(config consumer.QueueConfig) {
 	messageConsumer := consumer.NewConsumer(config, handleMessage, http.Client{})
-	infoLogger.Printf("Consumer: %# v", pretty.Formatter(messageConsumer))
+	infoLogger.Printf("[Startup] Consumer: %# v", pretty.Formatter(messageConsumer))
 
 	var consumerWaitGroup sync.WaitGroup
 	consumerWaitGroup.Add(1)
@@ -148,31 +152,33 @@ func readMessages(config consumer.QueueConfig) {
 }
 
 func handleMessage(msg consumer.Message) {
+	tid := msg.Headers["X-Request-Id"]
+
 	var metadataPublishEvent model.MetadataPublishEvent
 	err := json.Unmarshal([]byte(msg.Body), &metadataPublishEvent)
 	if err != nil {
-		errorLogger.Printf("Cannot unmarshal message body:[%v]", err.Error())
+		errorLogger.Printf("[%s] Cannot unmarshal message body:[%v]", tid, err.Error())
 		return
 	}
 
-	infoLogger.Printf("Processing metadata publish event for uuid [%s]", metadataPublishEvent.UUID)
+	infoLogger.Printf("[%s] Processing metadata publish event for uuid [%s]", tid, metadataPublishEvent.UUID)
 
 	metadataXML, err := base64.StdEncoding.DecodeString(metadataPublishEvent.Value)
 	if err != nil {
-		errorLogger.Printf("Error decoding body for uuid:  [%s]", err.Error())
+		errorLogger.Printf("[%s] Error decoding body for uuid:  [%s]", tid, err.Error())
 		return
 	}
 
 	metadata := model.ContentRef{}
 	err = xml.Unmarshal(metadataXML, &metadata)
 	if err != nil {
-		errorLogger.Printf("Error unmarshalling metadata XML: [%v]", err.Error())
+		errorLogger.Printf("[%s] Error unmarshalling metadata XML: [%v]", tid, err.Error())
 		return
 	}
 
 	var suggestions []model.Suggestion
 	for key, value := range taxonomyHandlers {
-		infoLogger.Printf("Processing taxonomy [%s]", key)
+		infoLogger.Printf("[%s] Processing taxonomy [%s]", tid, key)
 		suggestions = append(suggestions, value.BuildSuggestions(metadata)...)
 	}
 
@@ -180,7 +186,7 @@ func handleMessage(msg consumer.Message) {
 
 	marshalledSuggestions, err := json.Marshal(conceptSuggestion)
 	if err != nil {
-		errorLogger.Printf("Error marshalling the concept suggestions: [%v]", err.Error())
+		errorLogger.Printf("[%s] Error marshalling the concept suggestions: [%v]", tid, err.Error())
 		return
 	}
 
@@ -188,10 +194,10 @@ func handleMessage(msg consumer.Message) {
 	message := producer.Message{Headers: headers, Body: string(marshalledSuggestions)}
 	err = messageProducer.SendMessage(conceptSuggestion.UUID, message)
 	if err != nil {
-		errorLogger.Printf("Error sending concept suggestion to queue: [%v]", err.Error())
+		errorLogger.Printf("[%s] Error sending concept suggestion to queue: [%v]", tid, err.Error())
 	}
 
-	infoLogger.Printf("Sent suggestion message with message ID [%s]to queue.", headers["Message-Id"])
+	infoLogger.Printf("[%s] Sent suggestion message for [%s] with message ID [%s] to queue.", tid, metadataPublishEvent.UUID, headers["Message-Id"])
 }
 
 func buildConceptSuggestionsHeader(publishEventHeaders map[string]string) map[string]string {
@@ -201,6 +207,6 @@ func buildConceptSuggestionsHeader(publishEventHeaders map[string]string) map[st
 		"Content-Type":      publishEventHeaders["Content-Type"],
 		"X-Request-Id":      publishEventHeaders["X-Request-Id"],
 		"Origin-System-Id":  publishEventHeaders["Origin-System-Id"],
-		"Message-Timestamp": publishEventHeaders["Message-Timestamp"],
+		"Message-Timestamp": time.Now().Format(messageTimestampDateFormat),
 	}
 }
