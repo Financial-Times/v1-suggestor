@@ -12,6 +12,7 @@ type SubjectService struct {
 }
 
 const subjectURI = "http://www.ft.com/ontology/thing/Subject"
+const predicate = "isClassifiedBy"
 
 // BuildSuggestions builds a list of subject suggestions from a ContentRef.
 // Returns an empty array in case no subject annotations are found
@@ -37,6 +38,7 @@ func (subjectService SubjectService) BuildSuggestions(contentRef model.ContentRe
 		thing := model.Thing{
 			ID:        generateID(value.Term.ID),
 			PrefLabel: value.Term.CanonicalName,
+			Predicate: predicate,
 			Types:     []string{subjectURI},
 		}
 
