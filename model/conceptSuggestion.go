@@ -14,6 +14,7 @@ type Suggestion struct {
 type Thing struct {
 	ID        string   `json:"id"`
 	PrefLabel string   `json:"prefLabel"`
+	Predicate string   `json:"predicate"`
 	Types     []string `json:"types"`
 }
 

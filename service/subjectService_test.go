@@ -59,7 +59,12 @@ func buildConceptSuggestions(subjectCount int) []model.Suggestion {
 	provenance := model.Provenance{Scores: []model.Score{relevance, confidence}}
 
 	for i := 0; i < subjectCount; i++ {
-		thing := model.Thing{ID: NewNameUUIDFromBytes([]byte(subjectTMEIDS[i])).String(), PrefLabel: subjectNames[i], Types: []string{subjectURI}}
+		thing := model.Thing{
+			ID:        NewNameUUIDFromBytes([]byte(subjectTMEIDS[i])).String(),
+			PrefLabel: subjectNames[i],
+			Predicate: predicate,
+			Types:     []string{subjectURI},
+		}
 		subjectSuggestion := model.Suggestion{Thing: thing, Provenance: []model.Provenance{provenance}}
 		suggestions = append(suggestions, subjectSuggestion)
 	}
