@@ -52,7 +52,7 @@ func transformScore(score int) float32 {
 }
 
 func generateID(cmrTermID string) string {
-	return NewNameUUIDFromBytes([]byte(cmrTermID)).String()
+	return "http://api.ft.com/things/" + NewNameUUIDFromBytes([]byte(cmrTermID)).String()
 }
 
 func extractTags(wantedTagName string, contentRef model.ContentRef) []model.Tag {
