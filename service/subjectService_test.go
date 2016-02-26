@@ -60,7 +60,7 @@ func buildConceptSuggestions(subjectCount int) []model.Suggestion {
 
 	for i := 0; i < subjectCount; i++ {
 		thing := model.Thing{
-			ID:        NewNameUUIDFromBytes([]byte(subjectTMEIDS[i])).String(),
+			ID:        "http://api.ft.com/things/" + NewNameUUIDFromBytes([]byte(subjectTMEIDS[i])).String(),
 			PrefLabel: subjectNames[i],
 			Predicate: predicate,
 			Types:     []string{subjectURI},
