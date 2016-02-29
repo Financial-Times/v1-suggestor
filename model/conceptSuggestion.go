@@ -8,7 +8,7 @@ type ConceptSuggestion struct {
 
 type Suggestion struct {
 	Thing      Thing        `json:"thing"`
-	Provenance []Provenance `json:"provenances"`
+	Provenance []Provenance `json:"provenances,omitempty"`
 }
 
 type Thing struct {
