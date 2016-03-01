@@ -14,14 +14,14 @@ func (sectionService SectionService) buildSuggestions(contentRef ContentRef) []s
 	suggestions := []suggestion{}
 
 	for _, value := range sections {
-		suggestions = append(suggestions, buildSuggestion(value, sectionURI, predicate))
+		suggestions = append(suggestions, buildSuggestion(value, sectionURI, classification))
 	}
 
 	if contentRef.PrimarySection.CanonicalName != "" {
 		thing := thing{
 			ID:        generateID(contentRef.PrimarySection.ID),
 			PrefLabel: contentRef.PrimarySection.CanonicalName,
-			Predicate: primaryPredicate,
+			Predicate: primaryClassification,
 			Types:     []string{sectionURI},
 		}
 		suggestions = append(suggestions, suggestion{Thing: thing})

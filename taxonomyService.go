@@ -9,10 +9,14 @@ type TaxonomyService interface {
 	buildSuggestions(ContentRef) []suggestion
 }
 
-const predicate = "isClassifiedBy"
+const conceptAbout = "about"
+const conceptMentions = "mentions"
+
+const classification = "isClassifiedBy"
+const primaryClassification = "isPrimarilyClassifiedBy"
+
 const relevanceURI = "http://api.ft.com/scoringsystem/FT-RELEVANCE-SYSTEM"
 const confidenceURI = "http://api.ft.com/scoringsystem/FT-CONFIDENCE-SYSTEM"
-const primaryPredicate = "isPrimarilyClassifiedBy"
 
 func transformScore(score int) float32 {
 	return float32(score) / float32(100.0)

@@ -166,7 +166,7 @@ func buildConceptSuggestions(subjectCount int, sectionCount int, topicCount int,
 		thing := thing{
 			ID:        "http://api.ft.com/things/" + NewNameUUIDFromBytes([]byte(subjectTMEIDs[i])).String(),
 			PrefLabel: subjectNames[i],
-			Predicate: predicate,
+			Predicate: classification,
 			Types:     []string{subjectURI},
 		}
 		subjectSuggestion := suggestion{Thing: thing, Provenance: []provenance{metadataProvenance}}
@@ -177,7 +177,7 @@ func buildConceptSuggestions(subjectCount int, sectionCount int, topicCount int,
 		thing := thing{
 			ID:        "http://api.ft.com/things/" + NewNameUUIDFromBytes([]byte(sectionTMEIDs[i])).String(),
 			PrefLabel: sectionNames[i],
-			Predicate: predicate,
+			Predicate: classification,
 			Types:     []string{sectionURI},
 		}
 		sectionSuggestion := suggestion{Thing: thing, Provenance: []provenance{metadataProvenance}}
@@ -187,7 +187,7 @@ func buildConceptSuggestions(subjectCount int, sectionCount int, topicCount int,
 		thing := thing{
 			ID:        "http://api.ft.com/things/" + NewNameUUIDFromBytes([]byte(sectionTMEIDs[0])).String(),
 			PrefLabel: sectionNames[0],
-			Predicate: primaryPredicate,
+			Predicate: primaryClassification,
 			Types:     []string{sectionURI},
 		}
 		sectionSuggestion := suggestion{Thing: thing}
@@ -198,7 +198,7 @@ func buildConceptSuggestions(subjectCount int, sectionCount int, topicCount int,
 		oneThing := thing{
 			ID:        "http://api.ft.com/things/" + NewNameUUIDFromBytes([]byte(topicTMEIDs[i])).String(),
 			PrefLabel: topicNames[i],
-			Predicate: mentionsPredicate,
+			Predicate: conceptMentions,
 			Types:     []string{topicURI},
 		}
 		sectionSuggestion := suggestion{Thing: oneThing, Provenance: []provenance{metadataProvenance}}
@@ -208,7 +208,7 @@ func buildConceptSuggestions(subjectCount int, sectionCount int, topicCount int,
 		oneThing = thing{
 			ID:        "http://api.ft.com/things/" + NewNameUUIDFromBytes([]byte(topicTMEIDs[i])).String(),
 			PrefLabel: topicNames[i],
-			Predicate: aboutPredicate,
+			Predicate: conceptAbout,
 			Types:     []string{topicURI},
 		}
 		sectionSuggestion = suggestion{Thing: oneThing, Provenance: []provenance{metadataProvenance}}
