@@ -182,10 +182,10 @@ func handleMessage(msg consumer.Message) {
 		return
 	}
 
-	var suggestions []Suggestion
+	var suggestions []suggestion
 	for key, value := range taxonomyHandlers {
 		infoLogger.Printf("[%s] Processing taxonomy [%s]", tid, key)
-		suggestions = append(suggestions, value.BuildSuggestions(metadata)...)
+		suggestions = append(suggestions, value.buildSuggestions(metadata)...)
 	}
 
 	conceptSuggestion := ConceptSuggestion{UUID: metadataPublishEvent.UUID, Suggestions: suggestions}

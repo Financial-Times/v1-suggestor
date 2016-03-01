@@ -13,7 +13,7 @@ func TestSubjectServiceBuildSuggestions(t *testing.T) {
 	tests := []struct {
 		name        string
 		contentRef  ContentRef
-		suggestions []Suggestion
+		suggestions []suggestion
 	}{
 		{"Build concept suggestion from a contentRef with 1 subject tag",
 			buildContentRefWithSubjects(1),
@@ -30,7 +30,7 @@ func TestSubjectServiceBuildSuggestions(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		actualConceptSuggestions := service.BuildSuggestions(test.contentRef)
+		actualConceptSuggestions := service.buildSuggestions(test.contentRef)
 		assert.Equal(test.suggestions, actualConceptSuggestions, fmt.Sprintf("%s: Actual concept suggestions incorrect", test.name))
 	}
 }
@@ -41,7 +41,7 @@ func TestSectionServiceBuildSuggestions(t *testing.T) {
 	tests := []struct {
 		name        string
 		contentRef  ContentRef
-		suggestions []Suggestion
+		suggestions []suggestion
 	}{
 		{"Build concept suggestion from a contentRef with 1 section tag",
 			buildContentRefWithSections(1),
@@ -62,7 +62,7 @@ func TestSectionServiceBuildSuggestions(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		actualConceptSuggestions := service.BuildSuggestions(test.contentRef)
+		actualConceptSuggestions := service.buildSuggestions(test.contentRef)
 		assert.Equal(test.suggestions, actualConceptSuggestions, fmt.Sprintf("%s: Actual concept suggestions incorrect", test.name))
 	}
 }
@@ -73,7 +73,7 @@ func TestTopicServiceBuildSuggestions(t *testing.T) {
 	tests := []struct {
 		name        string
 		contentRef  ContentRef
-		suggestions []Suggestion
+		suggestions []suggestion
 	}{
 		{"Build concept suggestion from a contentRef with 1 topic tag",
 			buildContentRefWithTopics(1),
@@ -90,7 +90,7 @@ func TestTopicServiceBuildSuggestions(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		actualConceptSuggestions := service.BuildSuggestions(test.contentRef)
+		actualConceptSuggestions := service.buildSuggestions(test.contentRef)
 		assert.Equal(test.suggestions, actualConceptSuggestions, fmt.Sprintf("%s: Actual concept suggestions incorrect", test.name))
 	}
 }
@@ -112,106 +112,106 @@ func buildContentRefWithPrimarySection(sectionCount int) ContentRef {
 }
 
 func buildContentRef(subjectCount int, sectionCount int, topicCount int, hasPrimarySection bool) ContentRef {
-	tags := []Tag{}
+	metadataTags := []tag{}
 	for i := 0; i < subjectCount; i++ {
-		subjectTerm := Term{CanonicalName: subjectNames[i], Taxonomy: "Subjects", ID: subjectTMEIDs[i]}
-		tags = append(tags, Tag{Term: subjectTerm, TagScore: score})
+		subjectTerm := term{CanonicalName: subjectNames[i], Taxonomy: "Subjects", ID: subjectTMEIDs[i]}
+		metadataTags = append(metadataTags, tag{Term: subjectTerm, TagScore: testScore})
 	}
 
 	for i := 0; i < sectionCount; i++ {
-		sectionsTerm := Term{CanonicalName: sectionNames[i], Taxonomy: "Sections", ID: sectionTMEIDs[i]}
-		sectionsTag := Tag{Term: sectionsTerm, TagScore: score}
-		tags = append(tags, sectionsTag)
+		sectionsTerm := term{CanonicalName: sectionNames[i], Taxonomy: "Sections", ID: sectionTMEIDs[i]}
+		sectionsTag := tag{Term: sectionsTerm, TagScore: testScore}
+		metadataTags = append(metadataTags, sectionsTag)
 	}
 
 	for i := 0; i < topicCount; i++ {
-		topicTerm := Term{CanonicalName: topicNames[i], Taxonomy: "Topics", ID: topicTMEIDs[i]}
-		topicTag := Tag{Term: topicTerm, TagScore: score}
-		tags = append(tags, topicTag)
+		topicTerm := term{CanonicalName: topicNames[i], Taxonomy: "Topics", ID: topicTMEIDs[i]}
+		topicTag := tag{Term: topicTerm, TagScore: testScore}
+		metadataTags = append(metadataTags, topicTag)
 	}
 
-	tagHolder := Tags{Tags: tags}
+	tagHolder := tags{Tags: metadataTags}
 
-	var primarySection Term
+	var primarySection term
 	if hasPrimarySection {
-		primarySection = Term{CanonicalName: sectionNames[0], Taxonomy: "Sections", ID: sectionTMEIDs[0]}
+		primarySection = term{CanonicalName: sectionNames[0], Taxonomy: "Sections", ID: sectionTMEIDs[0]}
 	}
 	return ContentRef{TagHolder: tagHolder, PrimarySection: primarySection}
 }
 
-func buildConceptSuggestionsWithTopics(topicCount int) []Suggestion {
+func buildConceptSuggestionsWithTopics(topicCount int) []suggestion {
 	return buildConceptSuggestions(0, 0, topicCount, false)
 }
 
-func buildConceptSuggestionsWithSections(sectionCount int) []Suggestion {
+func buildConceptSuggestionsWithSections(sectionCount int) []suggestion {
 	return buildConceptSuggestions(0, sectionCount, 0, false)
 }
 
-func buildConceptSuggestionsWithPrimarySection(sectionCount int) []Suggestion {
+func buildConceptSuggestionsWithPrimarySection(sectionCount int) []suggestion {
 	return buildConceptSuggestions(0, sectionCount, 0, true)
 }
 
-func buildConceptSuggestionsWithSubjects(subjectCount int) []Suggestion {
+func buildConceptSuggestionsWithSubjects(subjectCount int) []suggestion {
 	return buildConceptSuggestions(subjectCount, 0, 0, false)
 }
 
-func buildConceptSuggestions(subjectCount int, sectionCount int, topicCount int, hasPrimarySection bool) []Suggestion {
-	suggestions := []Suggestion{}
+func buildConceptSuggestions(subjectCount int, sectionCount int, topicCount int, hasPrimarySection bool) []suggestion {
+	suggestions := []suggestion{}
 
-	relevance := Score{ScoringSystem: relevanceURI, Value: 0.65}
-	confidence := Score{ScoringSystem: confidenceURI, Value: 0.93}
-	provenance := Provenance{Scores: []Score{relevance, confidence}}
+	relevance := score{ScoringSystem: relevanceURI, Value: 0.65}
+	confidence := score{ScoringSystem: confidenceURI, Value: 0.93}
+	metadataProvenance := provenance{Scores: []score{relevance, confidence}}
 
 	for i := 0; i < subjectCount; i++ {
-		thing := Thing{
+		thing := thing{
 			ID:        "http://api.ft.com/things/" + NewNameUUIDFromBytes([]byte(subjectTMEIDs[i])).String(),
 			PrefLabel: subjectNames[i],
 			Predicate: predicate,
 			Types:     []string{subjectURI},
 		}
-		subjectSuggestion := Suggestion{Thing: thing, Provenance: []Provenance{provenance}}
+		subjectSuggestion := suggestion{Thing: thing, Provenance: []provenance{metadataProvenance}}
 		suggestions = append(suggestions, subjectSuggestion)
 	}
 
 	for i := 0; i < sectionCount; i++ {
-		thing := Thing{
+		thing := thing{
 			ID:        "http://api.ft.com/things/" + NewNameUUIDFromBytes([]byte(sectionTMEIDs[i])).String(),
 			PrefLabel: sectionNames[i],
 			Predicate: predicate,
 			Types:     []string{sectionURI},
 		}
-		sectionSuggestion := Suggestion{Thing: thing, Provenance: []Provenance{provenance}}
+		sectionSuggestion := suggestion{Thing: thing, Provenance: []provenance{metadataProvenance}}
 		suggestions = append(suggestions, sectionSuggestion)
 	}
 	if sectionCount > 0 && hasPrimarySection {
-		thing := Thing{
+		thing := thing{
 			ID:        "http://api.ft.com/things/" + NewNameUUIDFromBytes([]byte(sectionTMEIDs[0])).String(),
 			PrefLabel: sectionNames[0],
 			Predicate: primaryPredicate,
 			Types:     []string{sectionURI},
 		}
-		sectionSuggestion := Suggestion{Thing: thing}
+		sectionSuggestion := suggestion{Thing: thing}
 		suggestions = append(suggestions, sectionSuggestion)
 	}
 
 	for i := 0; i < topicCount; i++ {
-		thing := Thing{
+		oneThing := thing{
 			ID:        "http://api.ft.com/things/" + NewNameUUIDFromBytes([]byte(topicTMEIDs[i])).String(),
 			PrefLabel: topicNames[i],
 			Predicate: mentionsPredicate,
 			Types:     []string{topicURI},
 		}
-		sectionSuggestion := Suggestion{Thing: thing, Provenance: []Provenance{provenance}}
+		sectionSuggestion := suggestion{Thing: oneThing, Provenance: []provenance{metadataProvenance}}
 
 		suggestions = append(suggestions, sectionSuggestion)
 
-		thing = Thing{
+		oneThing = thing{
 			ID:        "http://api.ft.com/things/" + NewNameUUIDFromBytes([]byte(topicTMEIDs[i])).String(),
 			PrefLabel: topicNames[i],
 			Predicate: aboutPredicate,
 			Types:     []string{topicURI},
 		}
-		sectionSuggestion = Suggestion{Thing: thing, Provenance: []Provenance{provenance}}
+		sectionSuggestion = suggestion{Thing: oneThing, Provenance: []provenance{metadataProvenance}}
 
 		suggestions = append(suggestions, sectionSuggestion)
 	}
@@ -219,7 +219,7 @@ func buildConceptSuggestions(subjectCount int, sectionCount int, topicCount int,
 	return suggestions
 }
 
-var score = TagScore{Confidence: 93, Relevance: 65}
+var testScore = tagScore{Confidence: 93, Relevance: 65}
 var subjectNames = [...]string{"Mining Industry", "Oil Extraction Subsidies"}
 var subjectTMEIDs = [...]string{"Mjk=-U2VjdGlvbnM=", "Nw==-R2VucmVz"}
 var sectionNames = [...]string{"Companies", "Emerging Markets"}

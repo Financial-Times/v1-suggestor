@@ -6,7 +6,7 @@ import (
 
 // TaxonomyService defines the operations used to process taxonomies
 type TaxonomyService interface {
-	BuildSuggestions(ContentRef) []Suggestion
+	buildSuggestions(ContentRef) []suggestion
 }
 
 const predicate = "isClassifiedBy"
@@ -22,8 +22,8 @@ func generateID(cmrTermID string) string {
 	return "http://api.ft.com/things/" + NewNameUUIDFromBytes([]byte(cmrTermID)).String()
 }
 
-func extractTags(wantedTagName string, contentRef ContentRef) []Tag {
-	var wantedTags []Tag
+func extractTags(wantedTagName string, contentRef ContentRef) []tag {
+	var wantedTags []tag
 	for _, tag := range contentRef.TagHolder.Tags {
 		if strings.EqualFold(tag.Term.Taxonomy, wantedTagName) {
 			wantedTags = append(wantedTags, tag)
@@ -32,27 +32,27 @@ func extractTags(wantedTagName string, contentRef ContentRef) []Tag {
 	return wantedTags
 }
 
-func buildSuggestion(tag Tag, thingType string, predicate string) Suggestion {
-	relevance := Score{
+func buildSuggestion(tag tag, thingType string, predicate string) suggestion {
+	relevance := score{
 		ScoringSystem: relevanceURI,
 		Value:         transformScore(tag.TagScore.Relevance),
 	}
-	confidence := Score{
+	confidence := score{
 		ScoringSystem: confidenceURI,
 		Value:         transformScore(tag.TagScore.Confidence),
 	}
 
-	provenances := []Provenance{
-		Provenance{
-			Scores: []Score{relevance, confidence},
+	provenances := []provenance{
+		provenance{
+			Scores: []score{relevance, confidence},
 		},
 	}
-	thing := Thing{
+	thing := thing{
 		ID:        generateID(tag.Term.ID),
 		PrefLabel: tag.Term.CanonicalName,
 		Predicate: predicate,
 		Types:     []string{thingType},
 	}
 
-	return Suggestion{Thing: thing, Provenance: provenances}
+	return suggestion{Thing: thing, Provenance: provenances}
 }

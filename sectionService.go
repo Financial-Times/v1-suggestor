@@ -9,22 +9,22 @@ const sectionURI = "http://www.ft.com/ontology/thing/Section"
 
 // BuildSuggestions builds a list of section suggestions from a ContentRef.
 // Returns an empty array in case no section annotations are found
-func (sectionService SectionService) BuildSuggestions(contentRef ContentRef) []Suggestion {
+func (sectionService SectionService) buildSuggestions(contentRef ContentRef) []suggestion {
 	sections := extractTags(sectionService.HandledTaxonomy, contentRef)
-	suggestions := []Suggestion{}
+	suggestions := []suggestion{}
 
 	for _, value := range sections {
 		suggestions = append(suggestions, buildSuggestion(value, sectionURI, predicate))
 	}
 
 	if contentRef.PrimarySection.CanonicalName != "" {
-		thing := Thing{
+		thing := thing{
 			ID:        generateID(contentRef.PrimarySection.ID),
 			PrefLabel: contentRef.PrimarySection.CanonicalName,
 			Predicate: primaryPredicate,
 			Types:     []string{sectionURI},
 		}
-		suggestions = append(suggestions, Suggestion{Thing: thing})
+		suggestions = append(suggestions, suggestion{Thing: thing})
 	}
 
 	return suggestions

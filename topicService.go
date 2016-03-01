@@ -11,9 +11,9 @@ const aboutPredicate = "about"
 
 // BuildSuggestions builds a list of topic suggestions from a ContentRef.
 // Returns an empty array in case no topic annotations are found
-func (topicService TopicService) BuildSuggestions(contentRef ContentRef) []Suggestion {
+func (topicService TopicService) buildSuggestions(contentRef ContentRef) []suggestion {
 	topics := extractTags(topicService.HandledTaxonomy, contentRef)
-	suggestions := []Suggestion{}
+	suggestions := []suggestion{}
 
 	for _, value := range topics {
 		suggestions = append(suggestions, buildSuggestion(value, topicURI, mentionsPredicate))
