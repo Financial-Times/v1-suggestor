@@ -101,7 +101,7 @@ func main() {
 		setupTaxonomyHandlers()
 
 		infoLogger.Printf("[Startup] Handling taxonomies:")
-		for key, _ := range taxonomyHandlers {
+		for key := range taxonomyHandlers {
 			infoLogger.Printf("\t %v", key)
 		}
 
@@ -117,6 +117,7 @@ func main() {
 func setupTaxonomyHandlers() {
 	taxonomyHandlers["subjects"] = service.SubjectService{HandledTaxonomy: "subjects"}
 	taxonomyHandlers["sections"] = service.SectionService{HandledTaxonomy: "sections"}
+	taxonomyHandlers["topics"] = service.TopicService{HandledTaxonomy: "topics"}
 }
 
 func enableHealthChecks(srcConf consumer.QueueConfig, destConf producer.MessageProducerConfig) {

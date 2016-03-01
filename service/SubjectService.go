@@ -16,7 +16,7 @@ func (subjectService SubjectService) BuildSuggestions(contentRef model.ContentRe
 	suggestions := []model.Suggestion{}
 
 	for _, value := range subjects {
-		suggestions = append(suggestions, buildSuggestion(value, subjectURI))
+		suggestions = append(suggestions, buildSuggestion(value, subjectURI, predicate))
 	}
 
 	return suggestions

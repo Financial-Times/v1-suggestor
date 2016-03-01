@@ -34,7 +34,7 @@ func extractTags(wantedTagName string, contentRef model.ContentRef) []model.Tag 
 	return wantedTags
 }
 
-func buildSuggestion(tag model.Tag, thingType string) model.Suggestion {
+func buildSuggestion(tag model.Tag, thingType string, predicate string) model.Suggestion {
 	relevance := model.Score{
 		ScoringSystem: relevanceURI,
 		Value:         transformScore(tag.TagScore.Relevance),

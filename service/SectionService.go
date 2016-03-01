@@ -16,7 +16,7 @@ func (sectionService SectionService) BuildSuggestions(contentRef model.ContentRe
 	suggestions := []model.Suggestion{}
 
 	for _, value := range sections {
-		suggestions = append(suggestions, buildSuggestion(value, sectionURI))
+		suggestions = append(suggestions, buildSuggestion(value, sectionURI, predicate))
 	}
 
 	if contentRef.PrimarySection.CanonicalName != "" {
