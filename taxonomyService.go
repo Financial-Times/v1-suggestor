@@ -2,7 +2,6 @@ package main
 
 import (
 	"strings"
-
 )
 
 // TaxonomyService defines the operations used to process taxonomies

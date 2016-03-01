@@ -55,4 +55,3 @@ func digits(val uint64, digits uint) string {
 	result := uint64(hi) | (val & (uint64(hi) - uint64(1)))
 	return strconv.FormatInt(int64(result), 16)[1:]
 }
-

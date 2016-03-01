@@ -1,6 +1,5 @@
 package main
 
-
 // SectionService extracts and transforms the section taxonomy into a suggestion
 type SectionService struct {
 	HandledTaxonomy string

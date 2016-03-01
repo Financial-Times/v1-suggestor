@@ -1,6 +1,5 @@
 package main
 
-
 // SubjectService extracts and transforms the subject taxonomy into a suggestion
 type SubjectService struct {
 	HandledTaxonomy string
