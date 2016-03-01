@@ -3,6 +3,7 @@ package model
 // ContentRef models the data as it comes from the metadata publishing event
 type ContentRef struct {
 	TagHolder Tags `xml:"tags"`
+	PrimarySection Term `xml:"primarySection"`
 }
 
 type Tags struct {

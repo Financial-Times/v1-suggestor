@@ -99,6 +99,12 @@ func main() {
 		infoLogger.Printf("[Startup] Using dest configuration: %# v", pretty.Formatter(destConf))
 
 		setupTaxonomyHandlers()
+
+		infoLogger.Printf("[Startup] Handling taxonomies:")
+		for key, _ := range taxonomyHandlers {
+			infoLogger.Printf("\t %v", key)
+		}
+
 		go enableHealthChecks(srcConf, destConf)
 
 		initializeProducer(destConf)
@@ -110,6 +116,7 @@ func main() {
 
 func setupTaxonomyHandlers() {
 	taxonomyHandlers["subjects"] = service.SubjectService{HandledTaxonomy: "subjects"}
+	taxonomyHandlers["sections"] = service.SectionService{HandledTaxonomy: "sections"}
 }
 
 func enableHealthChecks(srcConf consumer.QueueConfig, destConf producer.MessageProducerConfig) {
