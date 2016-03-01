@@ -1,6 +1,4 @@
-package service
-
-import "github.com/Financial-Times/v1-suggestor/model"
+package main
 
 // TopicService extracts and transforms the topic taxonomy into a suggestion
 type TopicService struct {
@@ -13,9 +11,9 @@ const aboutPredicate = "about"
 
 // BuildSuggestions builds a list of topic suggestions from a ContentRef.
 // Returns an empty array in case no topic annotations are found
-func (topicService TopicService) BuildSuggestions(contentRef model.ContentRef) []model.Suggestion {
+func (topicService TopicService) BuildSuggestions(contentRef ContentRef) []Suggestion {
 	topics := extractTags(topicService.HandledTaxonomy, contentRef)
-	suggestions := []model.Suggestion{}
+	suggestions := []Suggestion{}
 
 	for _, value := range topics {
 		suggestions = append(suggestions, buildSuggestion(value, topicURI, mentionsPredicate))

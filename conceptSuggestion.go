@@ -1,4 +1,4 @@
-package model
+package main
 
 // ConceptSuggestion models the suggestion as it will be written on the queue
 type ConceptSuggestion struct {

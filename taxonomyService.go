@@ -1,14 +1,13 @@
-package service
+package main
 
 import (
 	"strings"
 
-	"github.com/Financial-Times/v1-suggestor/model"
 )
 
 // TaxonomyService defines the operations used to process taxonomies
 type TaxonomyService interface {
-	BuildSuggestions(model.ContentRef) []model.Suggestion
+	BuildSuggestions(ContentRef) []Suggestion
 }
 
 const predicate = "isClassifiedBy"
@@ -24,8 +23,8 @@ func generateID(cmrTermID string) string {
 	return "http://api.ft.com/things/" + NewNameUUIDFromBytes([]byte(cmrTermID)).String()
 }
 
-func extractTags(wantedTagName string, contentRef model.ContentRef) []model.Tag {
-	var wantedTags []model.Tag
+func extractTags(wantedTagName string, contentRef ContentRef) []Tag {
+	var wantedTags []Tag
 	for _, tag := range contentRef.TagHolder.Tags {
 		if strings.EqualFold(tag.Term.Taxonomy, wantedTagName) {
 			wantedTags = append(wantedTags, tag)
@@ -34,27 +33,27 @@ func extractTags(wantedTagName string, contentRef model.ContentRef) []model.Tag 
 	return wantedTags
 }
 
-func buildSuggestion(tag model.Tag, thingType string, predicate string) model.Suggestion {
-	relevance := model.Score{
+func buildSuggestion(tag Tag, thingType string, predicate string) Suggestion {
+	relevance := Score{
 		ScoringSystem: relevanceURI,
 		Value:         transformScore(tag.TagScore.Relevance),
 	}
-	confidence := model.Score{
+	confidence := Score{
 		ScoringSystem: confidenceURI,
 		Value:         transformScore(tag.TagScore.Confidence),
 	}
 
-	provenances := []model.Provenance{
-		model.Provenance{
-			Scores: []model.Score{relevance, confidence},
+	provenances := []Provenance{
+		Provenance{
+			Scores: []Score{relevance, confidence},
 		},
 	}
-	thing := model.Thing{
+	thing := Thing{
 		ID:        generateID(tag.Term.ID),
 		PrefLabel: tag.Term.CanonicalName,
 		Predicate: predicate,
 		Types:     []string{thingType},
 	}
 
-	return model.Suggestion{Thing: thing, Provenance: provenances}
+	return Suggestion{Thing: thing, Provenance: provenances}
 }

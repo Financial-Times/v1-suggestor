@@ -15,8 +15,6 @@ import (
 
 	"github.com/Financial-Times/message-queue-go-producer/producer"
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
-	"github.com/Financial-Times/v1-suggestor/model"
-	"github.com/Financial-Times/v1-suggestor/service"
 	"github.com/gorilla/mux"
 	"github.com/jawher/mow.cli"
 	"github.com/kr/pretty"
@@ -24,7 +22,7 @@ import (
 )
 
 var messageProducer producer.MessageProducer
-var taxonomyHandlers = make(map[string]service.TaxonomyService)
+var taxonomyHandlers = make(map[string]TaxonomyService)
 
 const messageTimestampDateFormat = "2006-01-02T15:04:05.000Z"
 
@@ -115,9 +113,9 @@ func main() {
 }
 
 func setupTaxonomyHandlers() {
-	taxonomyHandlers["subjects"] = service.SubjectService{HandledTaxonomy: "subjects"}
-	taxonomyHandlers["sections"] = service.SectionService{HandledTaxonomy: "sections"}
-	taxonomyHandlers["topics"] = service.TopicService{HandledTaxonomy: "topics"}
+	taxonomyHandlers["subjects"] = SubjectService{HandledTaxonomy: "subjects"}
+	taxonomyHandlers["sections"] = SectionService{HandledTaxonomy: "sections"}
+	taxonomyHandlers["topics"] = TopicService{HandledTaxonomy: "topics"}
 }
 
 func enableHealthChecks(srcConf consumer.QueueConfig, destConf producer.MessageProducerConfig) {
@@ -162,7 +160,7 @@ func readMessages(config consumer.QueueConfig) {
 func handleMessage(msg consumer.Message) {
 	tid := msg.Headers["X-Request-Id"]
 
-	var metadataPublishEvent model.MetadataPublishEvent
+	var metadataPublishEvent MetadataPublishEvent
 	err := json.Unmarshal([]byte(msg.Body), &metadataPublishEvent)
 	if err != nil {
 		errorLogger.Printf("[%s] Cannot unmarshal message body:[%v]", tid, err.Error())
@@ -177,20 +175,20 @@ func handleMessage(msg consumer.Message) {
 		return
 	}
 
-	metadata := model.ContentRef{}
+	metadata := ContentRef{}
 	err = xml.Unmarshal(metadataXML, &metadata)
 	if err != nil {
 		errorLogger.Printf("[%s] Error unmarshalling metadata XML: [%v]", tid, err.Error())
 		return
 	}
 
-	var suggestions []model.Suggestion
+	var suggestions []Suggestion
 	for key, value := range taxonomyHandlers {
 		infoLogger.Printf("[%s] Processing taxonomy [%s]", tid, key)
 		suggestions = append(suggestions, value.BuildSuggestions(metadata)...)
 	}
 
-	conceptSuggestion := model.ConceptSuggestion{UUID: metadataPublishEvent.UUID, Suggestions: suggestions}
+	conceptSuggestion := ConceptSuggestion{UUID: metadataPublishEvent.UUID, Suggestions: suggestions}
 
 	marshalledSuggestions, err := json.Marshal(conceptSuggestion)
 	if err != nil {
