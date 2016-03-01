@@ -101,7 +101,7 @@ func main() {
 		setupTaxonomyHandlers()
 
 		infoLogger.Printf("[Startup] Handling taxonomies:")
-		for key, _ := range taxonomyHandlers {
+		for key := range taxonomyHandlers {
 			infoLogger.Printf("\t %v", key)
 		}
 
