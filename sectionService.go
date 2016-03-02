@@ -1,6 +1,4 @@
-package service
-
-import "github.com/Financial-Times/v1-suggestor/model"
+package main
 
 // SectionService extracts and transforms the section taxonomy into a suggestion
 type SectionService struct {
@@ -11,22 +9,22 @@ const sectionURI = "http://www.ft.com/ontology/thing/Section"
 
 // BuildSuggestions builds a list of section suggestions from a ContentRef.
 // Returns an empty array in case no section annotations are found
-func (sectionService SectionService) BuildSuggestions(contentRef model.ContentRef) []model.Suggestion {
+func (sectionService SectionService) buildSuggestions(contentRef ContentRef) []suggestion {
 	sections := extractTags(sectionService.HandledTaxonomy, contentRef)
-	suggestions := []model.Suggestion{}
+	suggestions := []suggestion{}
 
 	for _, value := range sections {
-		suggestions = append(suggestions, buildSuggestion(value, sectionURI, predicate))
+		suggestions = append(suggestions, buildSuggestion(value, sectionURI, classification))
 	}
 
 	if contentRef.PrimarySection.CanonicalName != "" {
-		thing := model.Thing{
+		thing := thing{
 			ID:        generateID(contentRef.PrimarySection.ID),
 			PrefLabel: contentRef.PrimarySection.CanonicalName,
-			Predicate: primaryPredicate,
+			Predicate: primaryClassification,
 			Types:     []string{sectionURI},
 		}
-		suggestions = append(suggestions, model.Suggestion{Thing: thing})
+		suggestions = append(suggestions, suggestion{Thing: thing})
 	}
 
 	return suggestions

@@ -1,20 +1,22 @@
-package service
+package main
 
 import (
 	"strings"
-
-	"github.com/Financial-Times/v1-suggestor/model"
 )
 
 // TaxonomyService defines the operations used to process taxonomies
 type TaxonomyService interface {
-	BuildSuggestions(model.ContentRef) []model.Suggestion
+	buildSuggestions(ContentRef) []suggestion
 }
 
-const predicate = "isClassifiedBy"
+const conceptAbout = "about"
+const conceptMentions = "mentions"
+
+const classification = "isClassifiedBy"
+const primaryClassification = "isPrimarilyClassifiedBy"
+
 const relevanceURI = "http://api.ft.com/scoringsystem/FT-RELEVANCE-SYSTEM"
 const confidenceURI = "http://api.ft.com/scoringsystem/FT-CONFIDENCE-SYSTEM"
-const primaryPredicate = "isPrimarilyClassifiedBy"
 
 func transformScore(score int) float32 {
 	return float32(score) / float32(100.0)
@@ -24,8 +26,8 @@ func generateID(cmrTermID string) string {
 	return "http://api.ft.com/things/" + NewNameUUIDFromBytes([]byte(cmrTermID)).String()
 }
 
-func extractTags(wantedTagName string, contentRef model.ContentRef) []model.Tag {
-	var wantedTags []model.Tag
+func extractTags(wantedTagName string, contentRef ContentRef) []tag {
+	var wantedTags []tag
 	for _, tag := range contentRef.TagHolder.Tags {
 		if strings.EqualFold(tag.Term.Taxonomy, wantedTagName) {
 			wantedTags = append(wantedTags, tag)
@@ -34,27 +36,27 @@ func extractTags(wantedTagName string, contentRef model.ContentRef) []model.Tag 
 	return wantedTags
 }
 
-func buildSuggestion(tag model.Tag, thingType string, predicate string) model.Suggestion {
-	relevance := model.Score{
+func buildSuggestion(tag tag, thingType string, predicate string) suggestion {
+	relevance := score{
 		ScoringSystem: relevanceURI,
 		Value:         transformScore(tag.TagScore.Relevance),
 	}
-	confidence := model.Score{
+	confidence := score{
 		ScoringSystem: confidenceURI,
 		Value:         transformScore(tag.TagScore.Confidence),
 	}
 
-	provenances := []model.Provenance{
-		model.Provenance{
-			Scores: []model.Score{relevance, confidence},
+	provenances := []provenance{
+		provenance{
+			Scores: []score{relevance, confidence},
 		},
 	}
-	thing := model.Thing{
+	thing := thing{
 		ID:        generateID(tag.Term.ID),
 		PrefLabel: tag.Term.CanonicalName,
 		Predicate: predicate,
 		Types:     []string{thingType},
 	}
 
-	return model.Suggestion{Thing: thing, Provenance: provenances}
+	return suggestion{Thing: thing, Provenance: provenances}
 }

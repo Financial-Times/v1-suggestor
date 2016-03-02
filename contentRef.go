@@ -1,27 +1,27 @@
-package model
+package main
 
 // ContentRef models the data as it comes from the metadata publishing event
 type ContentRef struct {
-	TagHolder Tags `xml:"tags"`
-	PrimarySection Term `xml:"primarySection"`
+	TagHolder      tags `xml:"tags"`
+	PrimarySection term `xml:"primarySection"`
 }
 
-type Tags struct {
-	Tags []Tag `xml:"tag"`
+type tags struct {
+	Tags []tag `xml:"tag"`
 }
 
-type Tag struct {
-	Term     Term     `xml:"term"`
-	TagScore TagScore `xml:"score"`
+type tag struct {
+	Term     term     `xml:"term"`
+	TagScore tagScore `xml:"score"`
 }
 
-type Term struct {
+type term struct {
 	CanonicalName string `xml:"canonicalName"`
 	Taxonomy      string `xml:"taxonomy,attr"`
 	ID            string `xml:"id,attr"`
 }
 
-type TagScore struct {
+type tagScore struct {
 	Confidence int `xml:"confidence,attr"`
 	Relevance  int `xml:"relevance,attr"`
 }
