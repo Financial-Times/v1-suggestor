@@ -204,16 +204,6 @@ func buildConceptSuggestions(subjectCount int, sectionCount int, topicCount int,
 		sectionSuggestion := suggestion{Thing: oneThing, Provenance: []provenance{metadataProvenance}}
 
 		suggestions = append(suggestions, sectionSuggestion)
-
-		oneThing = thing{
-			ID:        "http://api.ft.com/things/" + NewNameUUIDFromBytes([]byte(topicTMEIDs[i])).String(),
-			PrefLabel: topicNames[i],
-			Predicate: conceptAbout,
-			Types:     []string{topicURI},
-		}
-		sectionSuggestion = suggestion{Thing: oneThing, Provenance: []provenance{metadataProvenance}}
-
-		suggestions = append(suggestions, sectionSuggestion)
 	}
 
 	return suggestions

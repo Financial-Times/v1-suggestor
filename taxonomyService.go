@@ -9,7 +9,6 @@ type TaxonomyService interface {
 	buildSuggestions(ContentRef) []suggestion
 }
 
-const conceptAbout = "about"
 const conceptMentions = "mentions"
 
 const classification = "isClassifiedBy"
