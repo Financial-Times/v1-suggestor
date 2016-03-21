@@ -5,7 +5,7 @@ type LocationService struct {
 	HandledTaxonomy string
 }
 
-const locationURI = "http://www.ft.com/ontology/thing/Location"
+const locationURI = "http://www.ft.com/ontology/Location"
 
 // BuildSuggestions builds a list of location suggestions from a ContentRef.
 // Returns an empty array in case no location annotations are found
