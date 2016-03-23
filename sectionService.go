@@ -5,7 +5,7 @@ type SectionService struct {
 	HandledTaxonomy string
 }
 
-const sectionURI = "http://www.ft.com/ontology/thing/Section"
+const sectionURI = "http://www.ft.com/ontology/Section"
 
 // BuildSuggestions builds a list of section suggestions from a ContentRef.
 // Returns an empty array in case no section annotations are found

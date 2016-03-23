@@ -5,7 +5,7 @@ type SubjectService struct {
 	HandledTaxonomy string
 }
 
-const subjectURI = "http://www.ft.com/ontology/thing/Subject"
+const subjectURI = "http://www.ft.com/ontology/Subject"
 
 // BuildSuggestions builds a list of subject suggestions from a ContentRef.
 // Returns an empty array in case no subject annotations are found
