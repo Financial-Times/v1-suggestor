@@ -180,7 +180,7 @@ func handleMessage(msg consumer.Message) {
 	metadata := ContentRef{}
 	err = xml.Unmarshal(metadataXML, &metadata)
 	if err != nil {
-		errorLogger.Printf("[%s] Error unmarshalling metadata XML: [%v]", tid, err.Error())
+		errorLogger.Printf("[%s] Error unmarshalling metadata XML for UUID [%v]: [%v]", tid, metadataPublishEvent.UUID, err.Error())
 		return
 	}
 
@@ -194,7 +194,7 @@ func handleMessage(msg consumer.Message) {
 
 	marshalledSuggestions, err := json.Marshal(conceptSuggestion)
 	if err != nil {
-		errorLogger.Printf("[%s] Error marshalling the concept suggestions: [%v]", tid, err.Error())
+		errorLogger.Printf("[%s] Error marshalling the concept suggestions for UUID [%v]: [%v]", tid, metadataPublishEvent.UUID, err.Error())
 		return
 	}
 
@@ -202,7 +202,7 @@ func handleMessage(msg consumer.Message) {
 	message := producer.Message{Headers: headers, Body: string(marshalledSuggestions)}
 	err = messageProducer.SendMessage(conceptSuggestion.UUID, message)
 	if err != nil {
-		errorLogger.Printf("[%s] Error sending concept suggestion to queue: [%v]", tid, err.Error())
+		errorLogger.Printf("[%s] Error sending concept suggestion to queue for UUID [%v]: [%v]", tid, metadataPublishEvent.UUID, err.Error())
 	}
 
 	infoLogger.Printf("[%s] Sent suggestion message for [%s] with message ID [%s] to queue.", tid, metadataPublishEvent.UUID, headers["Message-Id"])
