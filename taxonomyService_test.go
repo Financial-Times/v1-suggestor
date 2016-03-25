@@ -132,15 +132,15 @@ func TestGenreServiceBuildSuggestions(t *testing.T) {
 		contentRef  ContentRef
 		suggestions []suggestion
 	}{
-		{"Build concept suggestion from a contentRef with 1 subject tag",
+		{"Build concept suggestion from a contentRef with 1 genre tag",
 			buildContentRefWithGenres(1),
 			buildConceptSuggestionsWithGenres(1),
 		},
-		{"Build concept suggestion from a contentRef with no subject tags",
+		{"Build concept suggestion from a contentRef with no genre tags",
 			buildContentRefWithGenres(0),
 			buildConceptSuggestionsWithGenres(0),
 		},
-		{"Build concept suggestion from a contentRef with multiple subject tags",
+		{"Build concept suggestion from a contentRef with multiple genre tags",
 			buildContentRefWithGenres(2),
 			buildConceptSuggestionsWithGenres(2),
 		},
