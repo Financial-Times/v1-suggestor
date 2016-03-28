@@ -13,6 +13,8 @@ import (
 
 	"time"
 
+	"unicode/utf8"
+
 	"github.com/Financial-Times/message-queue-go-producer/producer"
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
 	"github.com/gorilla/mux"
@@ -177,8 +179,8 @@ func handleMessage(msg consumer.Message) {
 		return
 	}
 
-	metadata := ContentRef{}
-	err = xml.Unmarshal(metadataXML, &metadata)
+	metadata, err := unmarshalMetadata(metadataXML)
+
 	if err != nil {
 		errorLogger.Printf("[%s] Error unmarshalling metadata XML for UUID [%v]: [%v]", tid, metadataPublishEvent.UUID, err.Error())
 		return
@@ -206,6 +208,39 @@ func handleMessage(msg consumer.Message) {
 	}
 
 	infoLogger.Printf("[%s] Sent suggestion message for [%s] with message ID [%s] to queue.", tid, metadataPublishEvent.UUID, headers["Message-Id"])
+}
+
+func unmarshalMetadata(metadataXML []byte) (ContentRef, error) {
+	metadata := ContentRef{}
+	err := xml.Unmarshal(metadataXML, &metadata)
+	if err == nil {
+		return metadata, nil
+	}
+
+	//we have an error but not UTF-8 related
+	if utf8.Valid(metadataXML) {
+		return metadata, err
+	}
+
+	//UTF-8 related error, strip out invalid UTF-8, try to unmarshal again
+	metadataXML = stripInvalidUTF8Runes(metadataXML)
+	err = xml.Unmarshal(metadataXML, &metadata)
+	return metadata, err
+}
+
+func stripInvalidUTF8Runes(input []byte) []byte {
+	inputString := string(input)
+	validRunes := make([]rune, 0, len(inputString))
+	for i, r := range inputString {
+		if r == utf8.RuneError {
+			_, size := utf8.DecodeRuneInString(inputString[i:])
+			if size == 1 {
+				continue
+			}
+		}
+		validRunes = append(validRunes, r)
+	}
+	return []byte(string(validRunes))
 }
 
 func buildConceptSuggestionsHeader(publishEventHeaders map[string]string) map[string]string {
