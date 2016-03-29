@@ -11,22 +11,27 @@ import (
 func TestUnmarshalMetadata(t *testing.T) {
 
 	tests := []struct {
-		name           string
-		metadataBase64 string
+		name               string
+		metadataBase64     string
+		expectInvalidChars bool
 	}{
 		{
 			"Should unmarshal metadata with VALID UTF8 characters",
 			validUTF8Metadata,
+			false,
 		}, {
 			"Should unmarshal metadata with INVALID UTF8 characters",
 			invalidUTF8Metadata,
+			true,
 		},
 	}
 
 	for _, test := range tests {
 		metadataXML, _ := base64.StdEncoding.DecodeString(test.metadataBase64)
-		_, err := unmarshalMetadata(metadataXML)
+		_, err, hadInvalidChars := unmarshalMetadata(metadataXML)
 		assert.Nil(t, err, fmt.Sprintf("%s: Was not expecting error, but got [%v].", test.name, err))
+		assert.Equal(t, test.expectInvalidChars, hadInvalidChars,
+			fmt.Sprintf("%s: Expected [%v] for expectInvalidChars, but got [%v].", test.name, test.expectInvalidChars, hadInvalidChars))
 	}
 }
 

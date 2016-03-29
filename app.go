@@ -179,11 +179,15 @@ func handleMessage(msg consumer.Message) {
 		return
 	}
 
-	metadata, err := unmarshalMetadata(metadataXML)
+	metadata, err, hadInvalidChars := unmarshalMetadata(metadataXML)
 
 	if err != nil {
 		errorLogger.Printf("[%s] Error unmarshalling metadata XML for UUID [%v]: [%v]", tid, metadataPublishEvent.UUID, err.Error())
 		return
+	}
+
+	if hadInvalidChars {
+		infoLogger.Printf("[%s] Metadata XML for UUID [%s] had invalid UTF8 characters.", tid, metadataPublishEvent.UUID)
 	}
 
 	suggestions := []suggestion{}
@@ -210,22 +214,22 @@ func handleMessage(msg consumer.Message) {
 	infoLogger.Printf("[%s] Sent suggestion message for [%s] with message ID [%s] to queue.", tid, metadataPublishEvent.UUID, headers["Message-Id"])
 }
 
-func unmarshalMetadata(metadataXML []byte) (ContentRef, error) {
+func unmarshalMetadata(metadataXML []byte) (ContentRef, error, bool) {
 	metadata := ContentRef{}
 	err := xml.Unmarshal(metadataXML, &metadata)
 	if err == nil {
-		return metadata, nil
+		return metadata, nil, false
 	}
 
 	//we have an error but not UTF-8 related
 	if utf8.Valid(metadataXML) {
-		return metadata, err
+		return metadata, err, false
 	}
 
 	//UTF-8 related error, strip out invalid UTF-8, try to unmarshal again
 	metadataXML = stripInvalidUTF8Runes(metadataXML)
 	err = xml.Unmarshal(metadataXML, &metadata)
-	return metadata, err
+	return metadata, err, true
 }
 
 func stripInvalidUTF8Runes(input []byte) []byte {
