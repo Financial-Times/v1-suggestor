@@ -120,6 +120,7 @@ func setupTaxonomyHandlers() {
 	taxonomyHandlers["topics"] = TopicService{HandledTaxonomy: "topics"}
 	taxonomyHandlers["locations"] = LocationService{HandledTaxonomy: "gl"}
 	taxonomyHandlers["genres"] = GenreService{HandledTaxonomy: "genres"}
+	taxonomyHandlers["specialReports"] = SpecialReportService{HandledTaxonomy: "specialReports"}
 }
 
 func enableHealthChecks(srcConf consumer.QueueConfig, destConf producer.MessageProducerConfig) {
