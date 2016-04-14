@@ -57,8 +57,8 @@ func TestSectionServiceBuildSuggestions(t *testing.T) {
 			buildConceptSuggestionsWithSections(2),
 		},
 		{"Build concept suggestion from a contentRef with a primary section",
-			buildContentRefWithPrimarySection(2),
-			buildConceptSuggestionsWithPrimarySection(2),
+			buildContentRefWithPrimarySection("sections", 2),
+			buildConceptSuggestionsWithPrimarySection("sections", 2),
 		},
 	}
 
@@ -152,6 +152,37 @@ func TestGenreServiceBuildSuggestions(t *testing.T) {
 	}
 }
 
+func TestSpecialReportServiceBuildSuggestions(t *testing.T) {
+	assert := assert.New(t)
+	service := SpecialReportService{"specialReports"}
+	tests := []struct {
+		name        string
+		contentRef  ContentRef
+		suggestions []suggestion
+	}{
+		{"Build concept suggestion from a contentRef with 1 specialReports tag",
+			buildContentRefWithSpecialReports(1),
+			buildConceptSuggestionsWithSpecialReports(1),
+		},
+		{"Build concept suggestion from a contentRef with no specialReports tags",
+			buildContentRefWithSpecialReports(0),
+			buildConceptSuggestionsWithSpecialReports(0),
+		},
+		{"Build concept suggestion from a contentRef with multiple specialReports tags",
+			buildContentRefWithSpecialReports(2),
+			buildConceptSuggestionsWithSpecialReports(2),
+		},
+		{"Build concept suggestion from a contentRef with specialReports as a primary section",
+			buildContentRefWithPrimarySection("specialReports", 2),
+			buildConceptSuggestionsWithPrimarySection("specialReports", 2),
+		},
+	}
+
+	for _, test := range tests {
+		actualConceptSuggestions := service.buildSuggestions(test.contentRef)
+		assert.Equal(test.suggestions, actualConceptSuggestions, fmt.Sprintf("%s: Actual concept suggestions incorrect", test.name))
+	}
+}
 
 func buildContentRefWithLocations(locationCount int) ContentRef {
 	taxonomyAndCount := make(map[string]int)
@@ -177,9 +208,9 @@ func buildContentRefWithSections(sectionCount int) ContentRef {
 	return buildContentRef(taxonomyAndCount, false)
 }
 
-func buildContentRefWithPrimarySection(sectionCount int) ContentRef {
+func buildContentRefWithPrimarySection(taxonomyName string, sectionCount int) ContentRef {
 	taxonomyAndCount := make(map[string]int)
-	taxonomyAndCount["sections"] = sectionCount
+	taxonomyAndCount[taxonomyName] = sectionCount
 	return buildContentRef(taxonomyAndCount, true)
 }
 
@@ -190,8 +221,15 @@ func buildContentRefWithGenres(genreCount int) ContentRef {
 }
 
 
+func buildContentRefWithSpecialReports(specialReportCount int) ContentRef {
+	taxonomyAndCount := make(map[string]int)
+	taxonomyAndCount["specialReports"] = specialReportCount
+	return buildContentRef(taxonomyAndCount, false)
+}
+
 func buildContentRef(taxonomyAndCount map[string]int, hasPrimarySection bool) ContentRef {
 	metadataTags := []tag{}
+	var primarySection term
 	for key, count := range taxonomyAndCount {
 		if strings.EqualFold("subjects", key) {
 			for i := 0; i < count; i++ {
@@ -204,6 +242,10 @@ func buildContentRef(taxonomyAndCount map[string]int, hasPrimarySection bool) Co
 				sectionsTerm := term{CanonicalName: sectionNames[i], Taxonomy: "Sections", ID: sectionTMEIDs[i]}
 				sectionsTag := tag{Term: sectionsTerm, TagScore: testScore}
 				metadataTags = append(metadataTags, sectionsTag)
+			}
+
+			if hasPrimarySection {
+				primarySection = term{CanonicalName: sectionNames[0], Taxonomy: "Sections", ID: sectionTMEIDs[0]}
 			}
 		}
 		if strings.EqualFold("topics", key) {
@@ -226,13 +268,20 @@ func buildContentRef(taxonomyAndCount map[string]int, hasPrimarySection bool) Co
 				metadataTags = append(metadataTags, tag{Term: genreTerm, TagScore: testScore})
 			}
 		}
+		if strings.EqualFold("specialReports", key) {
+			for i := 0; i < count; i++ {
+				specialReportsTerm := term{CanonicalName: specialReportNames[i], Taxonomy: "SpecialReports", ID: specialReportTMEIDs[i]}
+				sectionsTag := tag{Term: specialReportsTerm, TagScore: testScore}
+				metadataTags = append(metadataTags, sectionsTag)
+			}
+
+			if hasPrimarySection {
+				primarySection = term{CanonicalName: specialReportNames[0], Taxonomy: "SpecialReports", ID: specialReportTMEIDs[0]}
+			}
+		}
 	}
 	tagHolder := tags{Tags: metadataTags}
 
-	var primarySection term
-	if hasPrimarySection {
-		primarySection = term{CanonicalName: sectionNames[0], Taxonomy: "Sections", ID: sectionTMEIDs[0]}
-	}
 	return ContentRef{TagHolder: tagHolder, PrimarySection: primarySection}
 }
 
@@ -254,9 +303,9 @@ func buildConceptSuggestionsWithSections(sectionCount int) []suggestion {
 	return buildConceptSuggestions(taxonomyAndCount, false)
 }
 
-func buildConceptSuggestionsWithPrimarySection(sectionCount int) []suggestion {
+func buildConceptSuggestionsWithPrimarySection(taxonomyName string, sectionCount int) []suggestion {
 	taxonomyAndCount := make(map[string]int)
-	taxonomyAndCount["sections"] = sectionCount
+	taxonomyAndCount[taxonomyName] = sectionCount
 	return buildConceptSuggestions(taxonomyAndCount, true)
 }
 
@@ -269,6 +318,12 @@ func buildConceptSuggestionsWithSubjects(subjectCount int) []suggestion {
 func buildConceptSuggestionsWithGenres(genreCount int) []suggestion {
 	taxonomyAndCount := make(map[string]int)
 	taxonomyAndCount["genres"] = genreCount
+	return buildConceptSuggestions(taxonomyAndCount, false)
+}
+
+func buildConceptSuggestionsWithSpecialReports(genreCount int) []suggestion {
+	taxonomyAndCount := make(map[string]int)
+	taxonomyAndCount["specialReports"] = genreCount
 	return buildConceptSuggestions(taxonomyAndCount, false)
 }
 
@@ -352,6 +407,29 @@ func buildConceptSuggestions(taxonomyAndCount map[string]int, hasPrimarySection 
 				suggestions = append(suggestions, genreSuggestion)
 			}
 		}
+		if strings.EqualFold("specialReports", key) {
+			for i := 0; i < count; i++ {
+				thing := thing{
+					ID:        "http://api.ft.com/things/" + NewNameUUIDFromBytes([]byte(specialReportTMEIDs[i])).String(),
+					PrefLabel: specialReportNames[i],
+					Predicate: classification,
+					Types:     []string{specialReportURI},
+				}
+				specialReportSuggestion := suggestion{Thing: thing, Provenance: []provenance{metadataProvenance}}
+				suggestions = append(suggestions, specialReportSuggestion)
+			}
+
+			if count > 0 && hasPrimarySection {
+				thing := thing{
+					ID:        "http://api.ft.com/things/" + NewNameUUIDFromBytes([]byte(specialReportTMEIDs[0])).String(),
+					PrefLabel: specialReportNames[0],
+					Predicate: primaryClassification,
+					Types:     []string{specialReportURI},
+				}
+				specialReportSuggestion := suggestion{Thing: thing}
+				suggestions = append(suggestions, specialReportSuggestion)
+			}
+		}
 	}
 	return suggestions
 }
@@ -367,3 +445,5 @@ var locationNames = [...]string{"New York", "Rio"}
 var locationTMEIDs = [...]string{"TmV3IFlvcms=-R0w=", "Umlv-R0w="}
 var genreNames = [...]string{"News", "Letter"}
 var genreTMEIDs = [...]string{"TmV3cw==-R2VucmVz", "TGV0dGVy-R2VucmVz"}
+var specialReportNames = [...]string{"Business", "Investment"}
+var specialReportTMEIDs = [...]string{"U3BlY2lhbFJlcG9ydHM=-R2Bucm3z", "U3BlY2lhbFJlcG9ydHM=-U2VjdGlvbnM="}
