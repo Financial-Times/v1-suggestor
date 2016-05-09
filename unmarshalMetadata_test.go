@@ -20,7 +20,7 @@ func TestUnmarshalMetadata(t *testing.T) {
 			validUTF8Metadata,
 			false,
 		}, {
-			"Should unmarshal metadata with INVALID UTF8 characters",
+			"Should not marshal metadata with INVALID UTF8 characters",
 			invalidUTF8Metadata,
 			true,
 		},
@@ -29,7 +29,11 @@ func TestUnmarshalMetadata(t *testing.T) {
 	for _, test := range tests {
 		metadataXML, _ := base64.StdEncoding.DecodeString(test.metadataBase64)
 		_, err, hadInvalidChars := unmarshalMetadata(metadataXML)
-		assert.Nil(t, err, fmt.Sprintf("%s: Was not expecting error, but got [%v].", test.name, err))
+		if test.expectInvalidChars{
+			assert.NotNil(t, err, fmt.Sprintf("%s: Was expecting error, but got [%v].", test.name, err))
+		} else{
+			assert.Nil(t, err, fmt.Sprintf("%s: Was not expecting error, but got [%v].", test.name, err))
+		}
 		assert.Equal(t, test.expectInvalidChars, hadInvalidChars,
 			fmt.Sprintf("%s: Expected [%v] for expectInvalidChars, but got [%v].", test.name, test.expectInvalidChars, hadInvalidChars))
 	}
