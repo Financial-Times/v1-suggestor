@@ -184,6 +184,34 @@ func TestSpecialReportServiceBuildSuggestions(t *testing.T) {
 	}
 }
 
+func TestAlphavilleSeriesServiceBuildSuggestions(t *testing.T) {
+	assert := assert.New(t)
+	service := AlphavilleSeriesService{"alphavilleSeries"}
+	tests := []struct {
+		name        string
+		contentRef  ContentRef
+		suggestions []suggestion
+	}{
+		{"Build concept suggestion from a contentRef with 1 alphavilleSeries tag",
+			buildContentRefWithAlphavilleSeries(1),
+			buildConceptSuggestionsWithAlphavilleSeries(1),
+		},
+		{"Build concept suggestion from a contentRef with no alphavilleSeries tags",
+			buildContentRefWithAlphavilleSeries(0),
+			buildConceptSuggestionsWithAlphavilleSeries(0),
+		},
+		{"Build concept suggestion from a contentRef with multiple alphavilleSeries tags",
+			buildContentRefWithAlphavilleSeries(2),
+			buildConceptSuggestionsWithAlphavilleSeries(2),
+		},
+	}
+
+	for _, test := range tests {
+		actualConceptSuggestions := service.buildSuggestions(test.contentRef)
+		assert.Equal(test.suggestions, actualConceptSuggestions, fmt.Sprintf("%s: Actual concept suggestions incorrect", test.name))
+	}
+}
+
 func buildContentRefWithLocations(locationCount int) ContentRef {
 	taxonomyAndCount := make(map[string]int)
 	taxonomyAndCount["locations"] = locationCount
@@ -220,10 +248,15 @@ func buildContentRefWithGenres(genreCount int) ContentRef {
 	return buildContentRef(taxonomyAndCount, false)
 }
 
-
 func buildContentRefWithSpecialReports(specialReportCount int) ContentRef {
 	taxonomyAndCount := make(map[string]int)
 	taxonomyAndCount["specialReports"] = specialReportCount
+	return buildContentRef(taxonomyAndCount, false)
+}
+
+func buildContentRefWithAlphavilleSeries(seriesCount int) ContentRef {
+	taxonomyAndCount := make(map[string]int)
+	taxonomyAndCount["alphavilleSeries"] = seriesCount
 	return buildContentRef(taxonomyAndCount, false)
 }
 
@@ -279,6 +312,13 @@ func buildContentRef(taxonomyAndCount map[string]int, hasPrimarySection bool) Co
 				primarySection = term{CanonicalName: specialReportNames[0], Taxonomy: "SpecialReports", ID: specialReportTMEIDs[0]}
 			}
 		}
+		if strings.EqualFold("alphavilleSeries", key) {
+			for i := 0; i < count; i++ {
+				alphavilleSeriesTerm := term{CanonicalName: alphavilleSeriesNames[i], Taxonomy: "AlphavilleSeries", ID: alphavilleSeriesTMEIDs[i]}
+				alphavilleSeriesTag := tag{Term: alphavilleSeriesTerm, TagScore: testScore}
+				metadataTags = append(metadataTags, alphavilleSeriesTag)
+			}
+		}
 	}
 	tagHolder := tags{Tags: metadataTags}
 
@@ -321,9 +361,15 @@ func buildConceptSuggestionsWithGenres(genreCount int) []suggestion {
 	return buildConceptSuggestions(taxonomyAndCount, false)
 }
 
-func buildConceptSuggestionsWithSpecialReports(genreCount int) []suggestion {
+func buildConceptSuggestionsWithSpecialReports(reportCount int) []suggestion {
 	taxonomyAndCount := make(map[string]int)
-	taxonomyAndCount["specialReports"] = genreCount
+	taxonomyAndCount["specialReports"] = reportCount
+	return buildConceptSuggestions(taxonomyAndCount, false)
+}
+
+func buildConceptSuggestionsWithAlphavilleSeries(seriesCount int) []suggestion {
+	taxonomyAndCount := make(map[string]int)
+	taxonomyAndCount["alphavilleSeries"] = seriesCount
 	return buildConceptSuggestions(taxonomyAndCount, false)
 }
 
@@ -430,6 +476,19 @@ func buildConceptSuggestions(taxonomyAndCount map[string]int, hasPrimarySection 
 				suggestions = append(suggestions, specialReportSuggestion)
 			}
 		}
+		if strings.EqualFold("alphavilleSeries", key) {
+			for i := 0; i < count; i++ {
+				oneThing := thing{
+					ID:        "http://api.ft.com/things/" + NewNameUUIDFromBytes([]byte(alphavilleSeriesTMEIDs[i])).String(),
+					PrefLabel: alphavilleSeriesNames[i],
+					Predicate: classification,
+					Types:     []string{alphavilleSeriesURI},
+				}
+				alphavilleSeriesSuggestion := suggestion{Thing: oneThing, Provenance: []provenance{metadataProvenance}}
+
+				suggestions = append(suggestions, alphavilleSeriesSuggestion)
+			}
+		}
 	}
 	return suggestions
 }
@@ -447,3 +506,5 @@ var genreNames = [...]string{"News", "Letter"}
 var genreTMEIDs = [...]string{"TmV3cw==-R2VucmVz", "TGV0dGVy-R2VucmVz"}
 var specialReportNames = [...]string{"Business", "Investment"}
 var specialReportTMEIDs = [...]string{"U3BlY2lhbFJlcG9ydHM=-R2Bucm3z", "U3BlY2lhbFJlcG9ydHM=-U2VjdGlvbnM="}
+var alphavilleSeriesNames = [...]string{"AV Series 1", "AV Series 2"}
+var alphavilleSeriesTMEIDs = [...]string{"series1-AV", "series2-AV"}
