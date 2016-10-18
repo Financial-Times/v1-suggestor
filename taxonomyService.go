@@ -10,7 +10,7 @@ type TaxonomyService interface {
 }
 
 const conceptMentions = "mentions"
-
+const conceptMajorMentions = "majorMentions"
 const classification = "isClassifiedBy"
 const primaryClassification = "isPrimarilyClassifiedBy"
 
