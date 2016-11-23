@@ -240,6 +240,39 @@ func TestOrganisationsServiceBuildSuggestions(t *testing.T) {
 	}
 }
 
+func TestPeopleServiceBuildSuggestions(t *testing.T) {
+	assert := assert.New(t)
+	service := PeopleService{"PN"}
+	tests := []struct {
+		name        string
+		contentRef  ContentRef
+		suggestions []suggestion
+	}{
+		{"Build concept suggestion from a contentRef with 1 Person tag",
+			buildContentRefWithPeople(1),
+			buildConceptSuggestionsWithPeople(1),
+		},
+		{"Build concept suggestion from a contentRef with no Person tags",
+			buildContentRefWithPeople(0),
+			buildConceptSuggestionsWithPeople(0),
+		},
+		{"Build concept suggestion from a contentRef with multiple Person tags",
+			buildContentRefWithPeople(2),
+			buildConceptSuggestionsWithPeople(2),
+		},
+	}
+
+	for _, test := range tests {
+		actualConceptSuggestions := service.buildSuggestions(test.contentRef)
+		assert.Equal(test.suggestions,
+			actualConceptSuggestions,
+			fmt.Sprintf("%s: Actual concept suggestions incorrect: ACTUAL: %s  TEST: %s ",
+			test.name,
+			actualConceptSuggestions,
+			test.suggestions))
+	}
+}
+
 func buildContentRefWithLocations(locationCount int) ContentRef {
 	taxonomyAndCount := make(map[string]int)
 	taxonomyAndCount["locations"] = locationCount
@@ -291,6 +324,12 @@ func buildContentRefWithAlphavilleSeries(seriesCount int) ContentRef {
 func buildContentRefWithOrganisations(organisationCount int) ContentRef {
 	taxonomyAndCount := make(map[string]int)
 	taxonomyAndCount["organisations"] = organisationCount
+	return buildContentRef(taxonomyAndCount, false)
+}
+
+func buildContentRefWithPeople(peopleCount int) ContentRef {
+	taxonomyAndCount := make(map[string]int)
+	taxonomyAndCount["people"] = peopleCount
 	return buildContentRef(taxonomyAndCount, false)
 }
 
@@ -360,6 +399,14 @@ func buildContentRef(taxonomyAndCount map[string]int, hasPrimarySection bool) Co
 				metadataTags = append(metadataTags, organisationTag)
 			}
 		}
+
+		if strings.EqualFold("people", key) {
+			for i := 0; i < count; i++ {
+				peopleTerm := term{CanonicalName: peopleNames[i], Taxonomy: "PN", ID: peopleTMEIDs[i]}
+				peopleTag := tag{Term: peopleTerm, TagScore: testScore}
+				metadataTags = append(metadataTags, peopleTag)
+			}
+		}
 	}
 	tagHolder := tags{Tags: metadataTags}
 
@@ -414,9 +461,15 @@ func buildConceptSuggestionsWithAlphavilleSeries(seriesCount int) []suggestion {
 	return buildConceptSuggestions(taxonomyAndCount, false)
 }
 
-func buildConceptSuggestionsWithOrganisations(seriesCount int) []suggestion {
+func buildConceptSuggestionsWithOrganisations(orgsCount int) []suggestion {
 	taxonomyAndCount := make(map[string]int)
-	taxonomyAndCount["organisations"] = seriesCount
+	taxonomyAndCount["organisations"] = orgsCount
+	return buildConceptSuggestions(taxonomyAndCount, false)
+}
+
+func buildConceptSuggestionsWithPeople(peopleCount int) []suggestion {
+	taxonomyAndCount := make(map[string]int)
+	taxonomyAndCount["people"] = peopleCount
 	return buildConceptSuggestions(taxonomyAndCount, false)
 }
 
@@ -551,6 +604,21 @@ func buildConceptSuggestions(taxonomyAndCount map[string]int, hasPrimarySection 
 
 			}
 		}
+		if strings.EqualFold("people", key) {
+
+			for i := 0; i < count; i++ {
+				oneThing := thing{
+					ID:        "http://api.ft.com/things/" + NewNameUUIDFromBytes([]byte(peopleTMEIDs[i])).String(),
+					PrefLabel: peopleNames[i],
+					Predicate: conceptMajorMentions,
+					Types:     []string{personURI},
+				}
+				peopleSuggestion := suggestion{Thing: oneThing, Provenance: []provenance{metadataProvenance}}
+
+				suggestions = append(suggestions, peopleSuggestion)
+
+			}
+		}
 	}
 
 	return suggestions
@@ -573,3 +641,5 @@ var alphavilleSeriesNames = [...]string{"AV Series 1", "AV Series 2"}
 var alphavilleSeriesTMEIDs = [...]string{"series1-AV", "series2-AV"}
 var organisationNames = [...]string{"Organisation 1", "Organisation 2"}
 var organisationTMEIDs = [...]string{"Organisation-1-TME", "Organisation-2-TME"}
+var peopleNames = [...]string{"Person 1", "Person 2"}
+var peopleTMEIDs = [...]string{"Person-1-TME", "Person-2-TME"}
