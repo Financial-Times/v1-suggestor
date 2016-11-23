@@ -208,7 +208,35 @@ func TestAlphavilleSeriesServiceBuildSuggestions(t *testing.T) {
 
 	for _, test := range tests {
 		actualConceptSuggestions := service.buildSuggestions(test.contentRef)
-		assert.Equal(test.suggestions, actualConceptSuggestions, fmt.Sprintf("%s: Actual concept suggestions incorrect", test.name))
+		assert.Equal(test.suggestions, actualConceptSuggestions, fmt.Sprintf("%s: Actual concept suggestions incorrect.", test.name))
+	}
+}
+
+func TestOrganisationsServiceBuildSuggestions(t *testing.T) {
+	assert := assert.New(t)
+	service := OrganisationService{"on"}
+	tests := []struct {
+		name        string
+		contentRef  ContentRef
+		suggestions []suggestion
+	}{
+		{"Build concept suggestion from a contentRef with 1 organisation tag",
+			buildContentRefWithOrganisations(1),
+			buildConceptSuggestionsWithOrganisations(1),
+		},
+		{"Build concept suggestion from a contentRef with no organisation tags",
+			buildContentRefWithOrganisations(0),
+			buildConceptSuggestionsWithOrganisations(0),
+		},
+		{"Build concept suggestion from a contentRef with multiple organisation tags",
+			buildContentRefWithOrganisations(2),
+			buildConceptSuggestionsWithOrganisations(2),
+		},
+	}
+
+	for _, test := range tests {
+		actualConceptSuggestions := service.buildSuggestions(test.contentRef)
+		assert.Equal(test.suggestions, actualConceptSuggestions, fmt.Sprintf("%s: Actual concept suggestions incorrect: ACTUAL: %s  TEST: %s ", test.name, actualConceptSuggestions, test.suggestions))
 	}
 }
 
@@ -257,6 +285,12 @@ func buildContentRefWithSpecialReports(specialReportCount int) ContentRef {
 func buildContentRefWithAlphavilleSeries(seriesCount int) ContentRef {
 	taxonomyAndCount := make(map[string]int)
 	taxonomyAndCount["alphavilleSeries"] = seriesCount
+	return buildContentRef(taxonomyAndCount, false)
+}
+
+func buildContentRefWithOrganisations(organisationCount int) ContentRef {
+	taxonomyAndCount := make(map[string]int)
+	taxonomyAndCount["organisations"] = organisationCount
 	return buildContentRef(taxonomyAndCount, false)
 }
 
@@ -319,6 +353,13 @@ func buildContentRef(taxonomyAndCount map[string]int, hasPrimarySection bool) Co
 				metadataTags = append(metadataTags, alphavilleSeriesTag)
 			}
 		}
+		if strings.EqualFold("organisations", key) {
+			for i := 0; i < count; i++ {
+				organisationTerm := term{CanonicalName: organisationNames[i], Taxonomy: "ON", ID: organisationTMEIDs[i]}
+				organisationTag := tag{Term: organisationTerm, TagScore: testScore}
+				metadataTags = append(metadataTags, organisationTag)
+			}
+		}
 	}
 	tagHolder := tags{Tags: metadataTags}
 
@@ -370,6 +411,12 @@ func buildConceptSuggestionsWithSpecialReports(reportCount int) []suggestion {
 func buildConceptSuggestionsWithAlphavilleSeries(seriesCount int) []suggestion {
 	taxonomyAndCount := make(map[string]int)
 	taxonomyAndCount["alphavilleSeries"] = seriesCount
+	return buildConceptSuggestions(taxonomyAndCount, false)
+}
+
+func buildConceptSuggestionsWithOrganisations(seriesCount int) []suggestion {
+	taxonomyAndCount := make(map[string]int)
+	taxonomyAndCount["organisations"] = seriesCount
 	return buildConceptSuggestions(taxonomyAndCount, false)
 }
 
@@ -489,7 +536,23 @@ func buildConceptSuggestions(taxonomyAndCount map[string]int, hasPrimarySection 
 				suggestions = append(suggestions, alphavilleSeriesSuggestion)
 			}
 		}
+		if strings.EqualFold("organisations", key) {
+
+			for i := 0; i < count; i++ {
+				oneThing := thing{
+					ID:        "http://api.ft.com/things/" + NewNameUUIDFromBytes([]byte(organisationTMEIDs[i])).String(),
+					PrefLabel: organisationNames[i],
+					Predicate: conceptMajorMentions,
+					Types:     []string{organisationURI},
+				}
+				organisationSuggestion := suggestion{Thing: oneThing, Provenance: []provenance{metadataProvenance}}
+
+				suggestions = append(suggestions, organisationSuggestion)
+
+			}
+		}
 	}
+
 	return suggestions
 }
 
@@ -508,3 +571,5 @@ var specialReportNames = [...]string{"Business", "Investment"}
 var specialReportTMEIDs = [...]string{"U3BlY2lhbFJlcG9ydHM=-R2Bucm3z", "U3BlY2lhbFJlcG9ydHM=-U2VjdGlvbnM="}
 var alphavilleSeriesNames = [...]string{"AV Series 1", "AV Series 2"}
 var alphavilleSeriesTMEIDs = [...]string{"series1-AV", "series2-AV"}
+var organisationNames = [...]string{"Organisation 1", "Organisation 2"}
+var organisationTMEIDs = [...]string{"Organisation-1-TME", "Organisation-2-TME"}
