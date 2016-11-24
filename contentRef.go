@@ -4,6 +4,7 @@ package main
 type ContentRef struct {
 	TagHolder      tags `xml:"tags"`
 	PrimarySection term `xml:"primarySection"`
+	PrimaryTheme   term `xml:"primaryTheme"`
 }
 
 type tags struct {

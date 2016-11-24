@@ -88,6 +88,10 @@ func TestTopicServiceBuildSuggestions(t *testing.T) {
 			buildContentRefWithTopics(2),
 			buildConceptSuggestionsWithTopics(2),
 		},
+		{"Build concept suggestion from a contentRef with 1 topic tag and a primary theme",
+			buildContentRefWithTopicsWithPrimaryTheme(1),
+			buildConceptSuggestionsWithTopicsWithPrimaryTheme(1),
+		},
 	}
 
 	for _, test := range tests {
@@ -115,6 +119,10 @@ func TestLocationServiceBuildSuggestions(t *testing.T) {
 		{"Build concept suggestion from a contentRef with multiple location tags",
 			buildContentRefWithLocations(2),
 			buildConceptSuggestionsWithLocations(2),
+		},
+		{"Build concept suggestion from a contentRef with 1 location tag and primamry location",
+			buildContentRefWithLocationsWithPrimaryTheme(1),
+			buildConceptSuggestionsWithLocationsWithPrimaryTheme(1),
 		},
 	}
 
@@ -232,6 +240,10 @@ func TestOrganisationsServiceBuildSuggestions(t *testing.T) {
 			buildContentRefWithOrganisations(2),
 			buildConceptSuggestionsWithOrganisations(2),
 		},
+		{"Build concept suggestion from a contentRef with 1 organisation tag and a primary theme",
+			buildContentRefWithOrganisationWithPrimaryTheme(1),
+			buildConceptSuggestionsWithOrganisationsWithPrimaryTheme(1),
+		},
 	}
 
 	for _, test := range tests {
@@ -260,6 +272,10 @@ func TestPeopleServiceBuildSuggestions(t *testing.T) {
 			buildContentRefWithPeople(2),
 			buildConceptSuggestionsWithPeople(2),
 		},
+		{"Build concept suggestion from a contentRef with a primary theme",
+			buildContentRefWithPeopleWithPrimaryTheme(2),
+			buildConceptSuggestionsWithPeopleWithPrimaryTheme(2),
+		},
 	}
 
 	for _, test := range tests {
@@ -267,75 +283,100 @@ func TestPeopleServiceBuildSuggestions(t *testing.T) {
 		assert.Equal(test.suggestions,
 			actualConceptSuggestions,
 			fmt.Sprintf("%s: Actual concept suggestions incorrect: ACTUAL: %s  TEST: %s ",
-			test.name,
-			actualConceptSuggestions,
-			test.suggestions))
+				test.name,
+				actualConceptSuggestions,
+				test.suggestions))
 	}
 }
 
 func buildContentRefWithLocations(locationCount int) ContentRef {
 	taxonomyAndCount := make(map[string]int)
 	taxonomyAndCount["locations"] = locationCount
-	return buildContentRef(taxonomyAndCount, false)
+	return buildContentRef(taxonomyAndCount, false, false)
+}
+
+func buildContentRefWithLocationsWithPrimaryTheme(locationCount int) ContentRef {
+	taxonomyAndCount := make(map[string]int)
+	taxonomyAndCount["locations"] = locationCount
+	return buildContentRef(taxonomyAndCount, false, true)
 }
 
 func buildContentRefWithTopics(topicCount int) ContentRef {
 	taxonomyAndCount := make(map[string]int)
 	taxonomyAndCount["topics"] = topicCount
-	return buildContentRef(taxonomyAndCount, false)
+	return buildContentRef(taxonomyAndCount, false, false)
+}
+
+func buildContentRefWithTopicsWithPrimaryTheme(topicCount int) ContentRef {
+	taxonomyAndCount := make(map[string]int)
+	taxonomyAndCount["topics"] = topicCount
+	return buildContentRef(taxonomyAndCount, false, true)
 }
 
 func buildContentRefWithSubjects(subjectCount int) ContentRef {
 	taxonomyAndCount := make(map[string]int)
 	taxonomyAndCount["subjects"] = subjectCount
-	return buildContentRef(taxonomyAndCount, false)
+	return buildContentRef(taxonomyAndCount, false, false)
 }
 
 func buildContentRefWithSections(sectionCount int) ContentRef {
 	taxonomyAndCount := make(map[string]int)
 	taxonomyAndCount["sections"] = sectionCount
-	return buildContentRef(taxonomyAndCount, false)
+	return buildContentRef(taxonomyAndCount, false, false)
 }
 
 func buildContentRefWithPrimarySection(taxonomyName string, sectionCount int) ContentRef {
 	taxonomyAndCount := make(map[string]int)
 	taxonomyAndCount[taxonomyName] = sectionCount
-	return buildContentRef(taxonomyAndCount, true)
+	return buildContentRef(taxonomyAndCount, true, false)
 }
 
 func buildContentRefWithGenres(genreCount int) ContentRef {
 	taxonomyAndCount := make(map[string]int)
 	taxonomyAndCount["genres"] = genreCount
-	return buildContentRef(taxonomyAndCount, false)
+	return buildContentRef(taxonomyAndCount, false, false)
 }
 
 func buildContentRefWithSpecialReports(specialReportCount int) ContentRef {
 	taxonomyAndCount := make(map[string]int)
 	taxonomyAndCount["specialReports"] = specialReportCount
-	return buildContentRef(taxonomyAndCount, false)
+	return buildContentRef(taxonomyAndCount, false, false)
 }
 
 func buildContentRefWithAlphavilleSeries(seriesCount int) ContentRef {
 	taxonomyAndCount := make(map[string]int)
 	taxonomyAndCount["alphavilleSeries"] = seriesCount
-	return buildContentRef(taxonomyAndCount, false)
+	return buildContentRef(taxonomyAndCount, false, false)
 }
 
 func buildContentRefWithOrganisations(organisationCount int) ContentRef {
 	taxonomyAndCount := make(map[string]int)
 	taxonomyAndCount["organisations"] = organisationCount
-	return buildContentRef(taxonomyAndCount, false)
+	return buildContentRef(taxonomyAndCount, false, false)
+}
+
+func buildContentRefWithOrganisationWithPrimaryTheme(orgCount int) ContentRef {
+	taxonomyAndCount := make(map[string]int)
+	taxonomyAndCount["organisations"] = orgCount
+	return buildContentRef(taxonomyAndCount, false, true)
 }
 
 func buildContentRefWithPeople(peopleCount int) ContentRef {
 	taxonomyAndCount := make(map[string]int)
 	taxonomyAndCount["people"] = peopleCount
-	return buildContentRef(taxonomyAndCount, false)
+	return buildContentRef(taxonomyAndCount, false, false)
 }
 
-func buildContentRef(taxonomyAndCount map[string]int, hasPrimarySection bool) ContentRef {
+func buildContentRefWithPeopleWithPrimaryTheme(peopleCount int) ContentRef {
+	taxonomyAndCount := make(map[string]int)
+	taxonomyAndCount["people"] = peopleCount
+	return buildContentRef(taxonomyAndCount, false, true)
+}
+
+func buildContentRef(taxonomyAndCount map[string]int, hasPrimarySection bool, hasPrimaryTheme bool) ContentRef {
 	metadataTags := []tag{}
 	var primarySection term
+	var primaryTheme term
 	for key, count := range taxonomyAndCount {
 		if strings.EqualFold("subjects", key) {
 			for i := 0; i < count; i++ {
@@ -360,12 +401,18 @@ func buildContentRef(taxonomyAndCount map[string]int, hasPrimarySection bool) Co
 				topicTag := tag{Term: topicTerm, TagScore: testScore}
 				metadataTags = append(metadataTags, topicTag)
 			}
+			if hasPrimaryTheme {
+				primaryTheme = term{CanonicalName: topicNames[0], Taxonomy: "Topics", ID: topicTMEIDs[0]}
+			}
 		}
 		if strings.EqualFold("locations", key) {
 			for i := 0; i < count; i++ {
 				locationTerm := term{CanonicalName: locationNames[i], Taxonomy: "GL", ID: locationTMEIDs[i]}
 				locationTag := tag{Term: locationTerm, TagScore: testScore}
 				metadataTags = append(metadataTags, locationTag)
+			}
+			if hasPrimaryTheme {
+				primaryTheme = term{CanonicalName: locationNames[0], Taxonomy: "GL", ID: locationTMEIDs[0]}
 			}
 		}
 		if strings.EqualFold("genres", key) {
@@ -398,6 +445,9 @@ func buildContentRef(taxonomyAndCount map[string]int, hasPrimarySection bool) Co
 				organisationTag := tag{Term: organisationTerm, TagScore: testScore}
 				metadataTags = append(metadataTags, organisationTag)
 			}
+			if hasPrimaryTheme {
+				primaryTheme = term{CanonicalName: organisationNames[0], Taxonomy: "Organisations", ID: organisationTMEIDs[0]}
+			}
 		}
 
 		if strings.EqualFold("people", key) {
@@ -406,74 +456,101 @@ func buildContentRef(taxonomyAndCount map[string]int, hasPrimarySection bool) Co
 				peopleTag := tag{Term: peopleTerm, TagScore: testScore}
 				metadataTags = append(metadataTags, peopleTag)
 			}
+			if hasPrimaryTheme {
+				primaryTheme = term{CanonicalName: peopleNames[0], Taxonomy: "People", ID: peopleTMEIDs[0]}
+			}
 		}
 	}
 	tagHolder := tags{Tags: metadataTags}
 
-	return ContentRef{TagHolder: tagHolder, PrimarySection: primarySection}
+	return ContentRef{TagHolder: tagHolder, PrimarySection: primarySection, PrimaryTheme: primaryTheme}
 }
 
 func buildConceptSuggestionsWithLocations(locationCount int) []suggestion {
 	taxonomyAndCount := make(map[string]int)
 	taxonomyAndCount["locations"] = locationCount
-	return buildConceptSuggestions(taxonomyAndCount, false)
+	return buildConceptSuggestions(taxonomyAndCount, false, false)
+}
+
+func buildConceptSuggestionsWithLocationsWithPrimaryTheme(locationCount int) []suggestion {
+	taxonomyAndCount := make(map[string]int)
+	taxonomyAndCount["locations"] = locationCount
+	return buildConceptSuggestions(taxonomyAndCount, false, true)
 }
 
 func buildConceptSuggestionsWithTopics(topicCount int) []suggestion {
 	taxonomyAndCount := make(map[string]int)
 	taxonomyAndCount["topics"] = topicCount
-	return buildConceptSuggestions(taxonomyAndCount, false)
+	return buildConceptSuggestions(taxonomyAndCount, false, false)
+}
+
+func buildConceptSuggestionsWithTopicsWithPrimaryTheme(topicsCount int) []suggestion {
+	taxonomyAndCount := make(map[string]int)
+	taxonomyAndCount["topics"] = topicsCount
+	return buildConceptSuggestions(taxonomyAndCount, false, true)
 }
 
 func buildConceptSuggestionsWithSections(sectionCount int) []suggestion {
 	taxonomyAndCount := make(map[string]int)
 	taxonomyAndCount["sections"] = sectionCount
-	return buildConceptSuggestions(taxonomyAndCount, false)
+	return buildConceptSuggestions(taxonomyAndCount, false, false)
 }
 
 func buildConceptSuggestionsWithPrimarySection(taxonomyName string, sectionCount int) []suggestion {
 	taxonomyAndCount := make(map[string]int)
 	taxonomyAndCount[taxonomyName] = sectionCount
-	return buildConceptSuggestions(taxonomyAndCount, true)
+	return buildConceptSuggestions(taxonomyAndCount, true, false)
 }
 
 func buildConceptSuggestionsWithSubjects(subjectCount int) []suggestion {
 	taxonomyAndCount := make(map[string]int)
 	taxonomyAndCount["subjects"] = subjectCount
-	return buildConceptSuggestions(taxonomyAndCount, false)
+	return buildConceptSuggestions(taxonomyAndCount, false, false)
 }
 
 func buildConceptSuggestionsWithGenres(genreCount int) []suggestion {
 	taxonomyAndCount := make(map[string]int)
 	taxonomyAndCount["genres"] = genreCount
-	return buildConceptSuggestions(taxonomyAndCount, false)
+	return buildConceptSuggestions(taxonomyAndCount, false, false)
 }
 
 func buildConceptSuggestionsWithSpecialReports(reportCount int) []suggestion {
 	taxonomyAndCount := make(map[string]int)
 	taxonomyAndCount["specialReports"] = reportCount
-	return buildConceptSuggestions(taxonomyAndCount, false)
+	return buildConceptSuggestions(taxonomyAndCount, false, false)
 }
 
 func buildConceptSuggestionsWithAlphavilleSeries(seriesCount int) []suggestion {
 	taxonomyAndCount := make(map[string]int)
 	taxonomyAndCount["alphavilleSeries"] = seriesCount
-	return buildConceptSuggestions(taxonomyAndCount, false)
+	return buildConceptSuggestions(taxonomyAndCount, false, false)
 }
 
 func buildConceptSuggestionsWithOrganisations(orgsCount int) []suggestion {
 	taxonomyAndCount := make(map[string]int)
 	taxonomyAndCount["organisations"] = orgsCount
-	return buildConceptSuggestions(taxonomyAndCount, false)
+	return buildConceptSuggestions(taxonomyAndCount, false, false)
+}
+
+func buildConceptSuggestionsWithOrganisationsWithPrimaryTheme(orgsCount int) []suggestion {
+	taxonomyAndCount := make(map[string]int)
+	taxonomyAndCount["organisations"] = orgsCount
+	return buildConceptSuggestions(taxonomyAndCount, false, true)
 }
 
 func buildConceptSuggestionsWithPeople(peopleCount int) []suggestion {
 	taxonomyAndCount := make(map[string]int)
 	taxonomyAndCount["people"] = peopleCount
-	return buildConceptSuggestions(taxonomyAndCount, false)
+	return buildConceptSuggestions(taxonomyAndCount, false, false)
 }
 
-func buildConceptSuggestions(taxonomyAndCount map[string]int, hasPrimarySection bool) []suggestion {
+func buildConceptSuggestionsWithPeopleWithPrimaryTheme(peopleCount int) []suggestion {
+	taxonomyAndCount := make(map[string]int)
+	taxonomyAndCount["people"] = peopleCount
+	return buildConceptSuggestions(taxonomyAndCount, false, true)
+}
+
+func buildConceptSuggestions(taxonomyAndCount map[string]int, hasPrimarySection bool, hasPrimaryTheme bool) []suggestion {
 	suggestions := []suggestion{}
 
 	relevance := score{ScoringSystem: relevanceURI, Value: 0.65}
@@ -523,9 +600,19 @@ func buildConceptSuggestions(taxonomyAndCount map[string]int, hasPrimarySection 
 					Predicate: conceptMentions,
 					Types:     []string{topicURI},
 				}
-				sectionSuggestion := suggestion{Thing: oneThing, Provenance: []provenance{metadataProvenance}}
+				topicSuggestion := suggestion{Thing: oneThing, Provenance: []provenance{metadataProvenance}}
 
-				suggestions = append(suggestions, sectionSuggestion)
+				suggestions = append(suggestions, topicSuggestion)
+			}
+			if count > 0 && hasPrimaryTheme {
+				thing := thing{
+					ID:        "http://api.ft.com/things/" + NewNameUUIDFromBytes([]byte(topicTMEIDs[0])).String(),
+					PrefLabel: topicNames[0],
+					Predicate: about,
+					Types:     []string{topicURI},
+				}
+				topicSuggestion := suggestion{Thing: thing}
+				suggestions = append(suggestions, topicSuggestion)
 			}
 		}
 		if strings.EqualFold("locations", key) {
@@ -536,9 +623,19 @@ func buildConceptSuggestions(taxonomyAndCount map[string]int, hasPrimarySection 
 					Predicate: conceptMentions,
 					Types:     []string{locationURI},
 				}
-				sectionSuggestion := suggestion{Thing: oneThing, Provenance: []provenance{metadataProvenance}}
+				locationSuggestion := suggestion{Thing: oneThing, Provenance: []provenance{metadataProvenance}}
 
-				suggestions = append(suggestions, sectionSuggestion)
+				suggestions = append(suggestions, locationSuggestion)
+			}
+			if count > 0 && hasPrimaryTheme {
+				thing := thing{
+					ID:        "http://api.ft.com/things/" + NewNameUUIDFromBytes([]byte(locationTMEIDs[0])).String(),
+					PrefLabel: locationNames[0],
+					Predicate: about,
+					Types:     []string{locationURI},
+				}
+				locationSuggestion := suggestion{Thing: thing}
+				suggestions = append(suggestions, locationSuggestion)
 			}
 		}
 		if strings.EqualFold("genres", key) {
@@ -603,6 +700,17 @@ func buildConceptSuggestions(taxonomyAndCount map[string]int, hasPrimarySection 
 				suggestions = append(suggestions, organisationSuggestion)
 
 			}
+			if count > 0 && hasPrimaryTheme {
+				thing := thing{
+					ID:        "http://api.ft.com/things/" + NewNameUUIDFromBytes([]byte(organisationTMEIDs[0])).String(),
+					PrefLabel: organisationNames[0],
+					Predicate: about,
+					Types:     []string{organisationURI},
+				}
+				organisationSuggestion := suggestion{Thing: thing}
+				suggestions = append(suggestions, organisationSuggestion)
+			}
+
 		}
 		if strings.EqualFold("people", key) {
 
@@ -614,9 +722,19 @@ func buildConceptSuggestions(taxonomyAndCount map[string]int, hasPrimarySection 
 					Types:     []string{personURI},
 				}
 				peopleSuggestion := suggestion{Thing: oneThing, Provenance: []provenance{metadataProvenance}}
-
 				suggestions = append(suggestions, peopleSuggestion)
 
+			}
+
+			if count > 0 && hasPrimaryTheme {
+				thing := thing{
+					ID:        "http://api.ft.com/things/" + NewNameUUIDFromBytes([]byte(peopleTMEIDs[0])).String(),
+					PrefLabel: peopleNames[0],
+					Predicate: about,
+					Types:     []string{personURI},
+				}
+				peopleSuggestion := suggestion{Thing: thing}
+				suggestions = append(suggestions, peopleSuggestion)
 			}
 		}
 	}

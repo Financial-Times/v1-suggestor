@@ -12,8 +12,19 @@ const personURI = "http://www.ft.com/ontology/person/Person"
 func (peopleService PeopleService) buildSuggestions(contentRef ContentRef) []suggestion {
 	people := extractTags(peopleService.HandledTaxonomy, contentRef)
 	suggestions := []suggestion{}
+
 	for _, value := range people {
 		suggestions = append(suggestions, buildSuggestion(value, personURI, conceptMajorMentions))
+	}
+
+	if contentRef.PrimaryTheme.CanonicalName != "" {
+		thing := thing{
+			ID:        generateID(contentRef.PrimaryTheme.ID),
+			PrefLabel: contentRef.PrimaryTheme.CanonicalName,
+			Predicate: about,
+			Types:     []string{personURI},
+		}
+		suggestions = append(suggestions, suggestion{Thing: thing})
 	}
 
 	return suggestions
