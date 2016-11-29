@@ -17,5 +17,15 @@ func (topicService TopicService) buildSuggestions(contentRef ContentRef) []sugge
 		suggestions = append(suggestions, buildSuggestion(value, topicURI, conceptMentions))
 	}
 
+	if contentRef.PrimaryTheme.CanonicalName != "" {
+		thing := thing{
+			ID:        generateID(contentRef.PrimaryTheme.ID),
+			PrefLabel: contentRef.PrimaryTheme.CanonicalName,
+			Predicate: about,
+			Types:     []string{topicURI},
+		}
+		suggestions = append(suggestions, suggestion{Thing: thing})
+	}
+
 	return suggestions
 }

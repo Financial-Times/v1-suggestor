@@ -17,5 +17,15 @@ func (locationService LocationService) buildSuggestions(contentRef ContentRef) [
 		suggestions = append(suggestions, buildSuggestion(value, locationURI, conceptMentions))
 	}
 
+	if contentRef.PrimaryTheme.CanonicalName != "" {
+		thing := thing{
+			ID:        generateID(contentRef.PrimaryTheme.ID),
+			PrefLabel: contentRef.PrimaryTheme.CanonicalName,
+			Predicate: about,
+			Types:     []string{locationURI},
+		}
+		suggestions = append(suggestions, suggestion{Thing: thing})
+	}
+
 	return suggestions
 }
