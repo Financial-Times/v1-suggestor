@@ -14,6 +14,7 @@ const conceptMajorMentions = "majorMentions"
 const classification = "isClassifiedBy"
 const primaryClassification = "isPrimarilyClassifiedBy"
 const about = "about"
+const hasAuthor = "hasAuthor"
 
 const relevanceURI = "http://api.ft.com/scoringsystem/FT-RELEVANCE-SYSTEM"
 const confidenceURI = "http://api.ft.com/scoringsystem/FT-CONFIDENCE-SYSTEM"
