@@ -124,7 +124,7 @@ func setupTaxonomyHandlers() {
 	taxonomyHandlers["alphavilleSeries"] = AlphavilleSeriesService{HandledTaxonomy: "alphavilleSeriesClassification"}
 	taxonomyHandlers["organisations"] = OrganisationService{HandledTaxonomy: "ON"}
 	taxonomyHandlers["people"] = PeopleService{HandledTaxonomy: "PN"}
-	taxonomyHandlers["authors"] = AuthorService{HandledTaxonomy: "Author"}
+	taxonomyHandlers["authors"] = AuthorService{HandledTaxonomy: "Authors"}
 }
 
 func enableHealthChecks(srcConf consumer.QueueConfig, destConf producer.MessageProducerConfig) {

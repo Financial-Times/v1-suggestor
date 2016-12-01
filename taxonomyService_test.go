@@ -291,7 +291,7 @@ func TestPeopleServiceBuildSuggestions(t *testing.T) {
 
 func TestAuthorServiceBuildSuggestions(t *testing.T) {
 	assert := assert.New(t)
-	service := AuthorService{"Author"}
+	service := AuthorService{"Authors"}
 	tests := []struct {
 		name        string
 		contentRef  ContentRef
