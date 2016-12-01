@@ -497,7 +497,7 @@ func buildContentRef(taxonomyAndCount map[string]int, hasPrimarySection bool, ha
 
 		if strings.EqualFold("author", key) {
 			for i := 0; i < count; i++ {
-				authourTerm := term{CanonicalName: authorNames[i], Taxonomy: "Author", ID: authorTMEIDs[i]}
+				authourTerm := term{CanonicalName: authorNames[i], Taxonomy: "Authors", ID: authorTMEIDs[i]}
 				authorTag := tag{Term: authourTerm, TagScore: testScore}
 				metadataTags = append(metadataTags, authorTag)
 			}
