@@ -125,6 +125,7 @@ func setupTaxonomyHandlers() {
 	taxonomyHandlers["organisations"] = OrganisationService{HandledTaxonomy: "ON"}
 	taxonomyHandlers["people"] = PeopleService{HandledTaxonomy: "PN"}
 	taxonomyHandlers["authors"] = AuthorService{HandledTaxonomy: "Authors"}
+	taxonomyHandlers["brands"] = BrandService{HandledTaxonomy: "Brands"}
 }
 
 func enableHealthChecks(srcConf consumer.QueueConfig, destConf producer.MessageProducerConfig) {

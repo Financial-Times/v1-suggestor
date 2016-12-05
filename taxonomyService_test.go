@@ -317,6 +317,33 @@ func TestAuthorServiceBuildSuggestions(t *testing.T) {
 	}
 }
 
+func TestBrandServiceBuildSuggestions(t *testing.T) {
+	assert := assert.New(t)
+	service := BrandService{HandledTaxonomy: "brands"}
+	tests := []struct {
+		name        string
+		contentRef  ContentRef
+		suggestions []suggestion
+	}{
+		{"Build concept suggestion from a contentRef with 1 brand tag",
+			buildContentRefWithBrands(1),
+			buildConceptSuggestionsWithBrands(1),
+		},
+		{"Build concept suggestion from a contentRef with no brand tags",
+			buildContentRefWithBrands(0),
+			buildConceptSuggestionsWithBrands(0),
+		},
+		{"Build concept suggestion from a contentRef with multiple brand tags",
+			buildContentRefWithBrands(2),
+			buildConceptSuggestionsWithBrands(2),
+		},
+	}
+	for _, test := range tests {
+		actualConceptSuggestions := service.buildSuggestions(test.contentRef)
+		assert.Equal(test.suggestions, actualConceptSuggestions, fmt.Sprintf("%s: Actual concept suggestions incorrect", test.name))
+	}
+}
+
 func buildContentRefWithLocations(locationCount int) ContentRef {
 	taxonomyAndCount := make(map[string]int)
 	taxonomyAndCount["locations"] = locationCount
@@ -362,6 +389,12 @@ func buildContentRefWithPrimarySection(taxonomyName string, sectionCount int) Co
 func buildContentRefWithGenres(genreCount int) ContentRef {
 	taxonomyAndCount := make(map[string]int)
 	taxonomyAndCount["genres"] = genreCount
+	return buildContentRef(taxonomyAndCount, false, false)
+}
+
+func buildContentRefWithBrands(count int) ContentRef {
+	taxonomyAndCount := make(map[string]int)
+	taxonomyAndCount["brands"] = count
 	return buildContentRef(taxonomyAndCount, false, false)
 }
 
@@ -553,6 +586,12 @@ func buildConceptSuggestionsWithSubjects(subjectCount int) []suggestion {
 func buildConceptSuggestionsWithGenres(genreCount int) []suggestion {
 	taxonomyAndCount := make(map[string]int)
 	taxonomyAndCount["genres"] = genreCount
+	return buildConceptSuggestions(taxonomyAndCount, false, false)
+}
+
+func buildConceptSuggestionsWithBrands(count int) []suggestion {
+	taxonomyAndCount := make(map[string]int)
+	taxonomyAndCount["brands"] = count
 	return buildConceptSuggestions(taxonomyAndCount, false, false)
 }
 
