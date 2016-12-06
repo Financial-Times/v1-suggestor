@@ -488,6 +488,12 @@ func buildContentRef(taxonomyAndCount map[string]int, hasPrimarySection bool, ha
 				metadataTags = append(metadataTags, tag{Term: genreTerm, TagScore: testScore})
 			}
 		}
+		if strings.EqualFold("brands", key) {
+			for i := 0; i < count; i++ {
+				brandTerm := term{CanonicalName: brandNames[i], Taxonomy: "Brands", ID: brandTMEIDs[i]}
+				metadataTags = append(metadataTags, tag{Term: brandTerm, TagScore: testScore})
+			}
+		}
 		if strings.EqualFold("specialReports", key) {
 			for i := 0; i < count; i++ {
 				specialReportsTerm := term{CanonicalName: specialReportNames[i], Taxonomy: "SpecialReports", ID: specialReportTMEIDs[i]}
@@ -737,6 +743,18 @@ func buildConceptSuggestions(taxonomyAndCount map[string]int, hasPrimarySection 
 				suggestions = append(suggestions, genreSuggestion)
 			}
 		}
+		if strings.EqualFold("brands", key) {
+			for i := 0; i < count; i++ {
+				thing := thing{
+					ID:        "http://api.ft.com/things/" + NewNameUUIDFromBytes([]byte(brandTMEIDs[i])).String(),
+					PrefLabel: brandNames[i],
+					Predicate: classification,
+					Types:     []string{brandURI},
+				}
+				brandSuggestion := suggestion{Thing: thing, Provenance: []provenance{metadataProvenance}}
+				suggestions = append(suggestions, brandSuggestion)
+			}
+		}
 		if strings.EqualFold("specialReports", key) {
 			for i := 0; i < count; i++ {
 				thing := thing{
@@ -853,6 +871,8 @@ var locationNames = [...]string{"New York", "Rio"}
 var locationTMEIDs = [...]string{"TmV3IFlvcms=-R0w=", "Umlv-R0w="}
 var genreNames = [...]string{"News", "Letter"}
 var genreTMEIDs = [...]string{"TmV3cw==-R2VucmVz", "TGV0dGVy-R2VucmVz"}
+var brandNames = [...]string{"FT", "Martin Wolf"}
+var brandTMEIDs = [...]string{"RlQK-QnJhbmRzCg==", "TWFydGluIFdvbGY=-QnJhbmRzCg=="}
 var specialReportNames = [...]string{"Business", "Investment"}
 var specialReportTMEIDs = [...]string{"U3BlY2lhbFJlcG9ydHM=-R2Bucm3z", "U3BlY2lhbFJlcG9ydHM=-U2VjdGlvbnM="}
 var alphavilleSeriesNames = [...]string{"AV Series 1", "AV Series 2"}
