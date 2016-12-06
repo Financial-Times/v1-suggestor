@@ -1,4 +1,4 @@
-[![Coverage Status](https://coveralls.io/repos/github/Financial-Times/v1-suggestor/badge.svg?branch=master)](https://coveralls.io/github/Financial-Times/v1-suggestor?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/Financial-Times/v1-suggestor/badge.svg)](https://coveralls.io/github/Financial-Times/v1-suggestor)
 
 # V1 suggestor
 * Reads V1 metadata from the source kafka queue
