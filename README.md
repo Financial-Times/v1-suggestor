@@ -1,3 +1,5 @@
+[![Coverage Status](https://coveralls.io/repos/github/Financial-Times/v1-suggestor/badge.svg)](https://coveralls.io/github/Financial-Times/v1-suggestor)
+
 # V1 suggestor
 * Reads V1 metadata from the source kafka queue
 * filters and transforms it to UP standard json representation
@@ -17,3 +19,5 @@ export|set DEST_QUEUE=kafka
 
 ./v1-suggestor[.exe]
 ```
+
+Note: Brigthcove video metadata is the same pipeline as metadata for Methode articles, so brands are added in the same way.
