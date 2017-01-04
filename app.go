@@ -21,6 +21,7 @@ import (
 	"github.com/jawher/mow.cli"
 	"github.com/kr/pretty"
 	"github.com/twinj/uuid"
+	status "github.com/Financial-Times/service-status-go/httphandlers"
 )
 
 var messageProducer producer.MessageProducer
@@ -136,6 +137,10 @@ func enableHealthChecks(srcConf consumer.QueueConfig, destConf producer.MessageP
 	router := mux.NewRouter()
 	router.HandleFunc("/__health", healthCheck.checkHealth())
 	router.HandleFunc("/__gtg", healthCheck.gtg)
+	router.HandleFunc(status.PingPath, status.PingHandler)
+	router.HandleFunc(status.PingPathDW, status.PingHandler)
+	router.HandleFunc(status.BuildInfoPath, status.BuildInfoHandler)
+	router.HandleFunc(status.BuildInfoPathDW, status.BuildInfoHandler)
 	http.Handle("/", router)
 	err := http.ListenAndServe(":8080", nil)
 	if err != nil {
