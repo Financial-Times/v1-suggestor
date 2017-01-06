@@ -30,16 +30,7 @@ This service is deployed in the Delivery clusters.
 
 
 ## Prerequisites
-1.  In order to set LDFLAGS to provide correct versionning information to */build-info* endpoint we need to enable access to remote GIT repo via https (not ssh) because Docker does not have your ssh keys.                                                                                                                                                                     
-    When we run the service locally (not in Docker) this is not required but you would need to execute manually the whole section of the Dockerfile that deals with setting LDFLAGS parameters.
-````
-git config remote.origin.url https://github.com/Financial-Times/v1-suggestor.git
-````
-When docker build finished do not forget to set remote.origin.url to use ssh
-````
-git config remote.origin.url git@github.com:Financial-Times/v1-suggestor.git
-````
-2. In order to run v1-suggestor you would need at least kafka/zookeeper and kafka-rest-proxy to be accessible somewhere
+In order to run v1-suggestor you would need at least kafka/zookeeper and kafka-rest-proxy to be accessible somewhere
 and you would need to provide the host and the port to connect to them as startup parameters.
 
 ## Run locally
@@ -59,12 +50,17 @@ and you would need to provide the host and the port to connect to them as startu
 ````
 ./v1-suggestor[.exe]
 ````
-## Run in Docker
+
+## Build in Docker
 ````
+git config remote.origin.url https://github.com/Financial-Times/v1-suggestor.git
 docker build -t coco/v1-suggestor:$DOCKER_APP_VERSION .
+git config remote.origin.url git@github.com:Financial-Times/v1-suggestor.git
 ````
 
+# #Run in Docker
 ````
+
 docker run --name v1-suggestor -p 8080 \
 --env "SRC_ADDR=http://kafka:8080" \
 	--env "SRC_GROUP=v1Suggestor" \
