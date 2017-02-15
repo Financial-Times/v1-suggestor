@@ -51,14 +51,14 @@ func (h *Healthcheck) checkAggregateMessageQueueProxiesReachable() error {
 	errMsg := ""
 
 	for i := 0; i < len(h.srcConf.Addrs); i++ {
-		err := h.checkMessageQueueProxyReachable(h.srcConf.Addrs[i], h.srcConf.Topic, h.srcConf.AuthorizationKey, h.srcConf.Queue)
+		err := h.checkMessageQueueProxyReachable(h.srcConf.Addrs[i], h.srcConf.Topic, h.srcConf.AuthorizationKey)
 		if err == nil {
 			return nil
 		}
 		errMsg = errMsg + fmt.Sprintf("For %s there is an error %v \n", h.srcConf.Addrs[i], err.Error())
 	}
 
-	err := h.checkMessageQueueProxyReachable(h.destConf.Addr, h.destConf.Topic, h.destConf.Authorization, h.destConf.Queue)
+	err := h.checkMessageQueueProxyReachable(h.destConf.Addr, h.destConf.Topic, h.destConf.Authorization)
 	if err == nil {
 		return nil
 	}
@@ -68,7 +68,7 @@ func (h *Healthcheck) checkAggregateMessageQueueProxiesReachable() error {
 
 }
 
-func (h *Healthcheck) checkMessageQueueProxyReachable(address string, topic string, authKey string, queue string) error {
+func (h *Healthcheck) checkMessageQueueProxyReachable(address string, topic string, authKey string) error {
 	req, err := http.NewRequest("GET", address+"/topics", nil)
 	if err != nil {
 		warnLogger.Printf("Could not connect to proxy: %v", err.Error())
@@ -77,10 +77,6 @@ func (h *Healthcheck) checkMessageQueueProxyReachable(address string, topic stri
 
 	if len(authKey) > 0 {
 		req.Header.Add("Authorization", authKey)
-	}
-
-	if len(queue) > 0 {
-		req.Host = queue
 	}
 
 	resp, err := h.client.Do(req)

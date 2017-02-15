@@ -17,11 +17,11 @@ import (
 
 	"github.com/Financial-Times/message-queue-go-producer/producer"
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
+	status "github.com/Financial-Times/service-status-go/httphandlers"
 	"github.com/gorilla/mux"
 	"github.com/jawher/mow.cli"
 	"github.com/kr/pretty"
 	"github.com/twinj/uuid"
-	status "github.com/Financial-Times/service-status-go/httphandlers"
 )
 
 var messageProducer producer.MessageProducer
@@ -49,12 +49,6 @@ func main() {
 		Desc:   "The topic to read the meassages from",
 		EnvVar: "SRC_TOPIC",
 	})
-	sourceQueue := app.String(cli.StringOpt{
-		Name:   "source-queue",
-		Value:  "",
-		Desc:   "Thew queue to read the messages from",
-		EnvVar: "SRC_QUEUE",
-	})
 	sourceConcurrentProcessing := app.Bool(cli.BoolOpt{
 		Name:   "source-concurrent-processing",
 		Value:  false,
@@ -73,26 +67,18 @@ func main() {
 		Desc:   "The topic to write the concept suggestion to",
 		EnvVar: "DEST_TOPIC",
 	})
-	destinationQueue := app.String(cli.StringOpt{
-		Name:   "destination-queue",
-		Value:  "",
-		Desc:   "The queue used by the producer",
-		EnvVar: "DEST_QUEUE",
-	})
 
 	app.Action = func() {
 		srcConf := consumer.QueueConfig{
 			Addrs:                *sourceAddresses,
 			Group:                *sourceGroup,
 			Topic:                *sourceTopic,
-			Queue:                *sourceQueue,
 			ConcurrentProcessing: *sourceConcurrentProcessing,
 		}
 
 		destConf := producer.MessageProducerConfig{
 			Addr:  *destinationAddress,
 			Topic: *destinationTopic,
-			Queue: *destinationQueue,
 		}
 
 		initLogs(os.Stdout, os.Stdout, os.Stderr)
