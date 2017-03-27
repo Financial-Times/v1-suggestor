@@ -1,6 +1,7 @@
-node {
-   stage 'build-image'
-   echo 'Hello World 1'
-   stage 'Stage 2'
-   echo 'Hello World 2'
+node('docker') {
+  stage 'checkout'
+  checkout scm
+  
+  stage 'build-image'
+  docker.build("coco/v1-suggestor:pipeline01", ".") 
 }
