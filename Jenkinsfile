@@ -1,10 +1,6 @@
 node {
-    agent any
-    stages {
-        stage('build-image') {
-            steps {
-                sh 'docker build -t coco/v1-suggestor:pipeline01 .'
-            }
-        }
-    }
+   stage 'build-image'
+   echo 'Hello World 1'
+   stage 'Stage 2'
+   echo 'Hello World 2'
 }
