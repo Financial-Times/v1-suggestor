@@ -154,7 +154,7 @@ func initializeProducer(config producer.MessageProducerConfig) {
 }
 
 func readMessages(config consumer.QueueConfig) {
-	messageConsumer := consumer.NewConsumer(config, handleMessage, http.Client{})
+	messageConsumer := consumer.NewConsumer(config, handleMessage, &http.Client{})
 	infoLogger.Printf("[Startup] Consumer: %# v", pretty.Formatter(messageConsumer))
 
 	var consumerWaitGroup sync.WaitGroup

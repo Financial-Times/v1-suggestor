@@ -690,7 +690,7 @@ func buildConceptSuggestions(taxonomyAndCount map[string]int, hasPrimarySection 
 				oneThing := thing{
 					ID:        "http://api.ft.com/things/" + NewNameUUIDFromBytes([]byte(topicTMEIDs[i])).String(),
 					PrefLabel: topicNames[i],
-					Predicate: conceptMentions,
+					Predicate: conceptMajorMentions,
 					Types:     []string{topicURI},
 				}
 				topicSuggestion := suggestion{Thing: oneThing, Provenance: []provenance{metadataProvenance}}
@@ -713,7 +713,7 @@ func buildConceptSuggestions(taxonomyAndCount map[string]int, hasPrimarySection 
 				oneThing := thing{
 					ID:        "http://api.ft.com/things/" + NewNameUUIDFromBytes([]byte(locationTMEIDs[i])).String(),
 					PrefLabel: locationNames[i],
-					Predicate: conceptMentions,
+					Predicate: conceptMajorMentions,
 					Types:     []string{locationURI},
 				}
 				locationSuggestion := suggestion{Thing: oneThing, Provenance: []provenance{metadataProvenance}}

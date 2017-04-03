@@ -14,7 +14,7 @@ func (topicService TopicService) buildSuggestions(contentRef ContentRef) []sugge
 	suggestions := []suggestion{}
 
 	for _, value := range topics {
-		suggestions = append(suggestions, buildSuggestion(value, topicURI, conceptMentions))
+		suggestions = append(suggestions, buildSuggestion(value, topicURI, conceptMajorMentions))
 	}
 
 	if contentRef.PrimaryTheme.CanonicalName != "" {
