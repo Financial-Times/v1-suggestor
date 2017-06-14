@@ -19,8 +19,7 @@ RUN apk add --update bash \
   && mkdir -p $GOPATH/src/${REPO_PATH} \
   && cp -r v1-suggestor/* $GOPATH/src/${REPO_PATH} \
   && cd $GOPATH/src/${REPO_PATH} \
-  && go get -u github.com/kardianos/govendor \
-  && $GOPATH/bin/govendor sync \
+  && go get -t ./... \
   && echo ${LDFLAGS} \
   && go build -ldflags="${LDFLAGS}" \
   && mv v1-suggestor /app \
