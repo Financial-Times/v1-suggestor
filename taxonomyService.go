@@ -9,15 +9,16 @@ type TaxonomyService interface {
 	buildSuggestions(ContentRef) []suggestion
 }
 
-const conceptMentions = "mentions"
-const conceptMajorMentions = "majorMentions"
-const classification = "isClassifiedBy"
-const primaryClassification = "isPrimarilyClassifiedBy"
-const about = "about"
-const hasAuthor = "hasAuthor"
-
-const relevanceURI = "http://api.ft.com/scoringsystem/FT-RELEVANCE-SYSTEM"
-const confidenceURI = "http://api.ft.com/scoringsystem/FT-CONFIDENCE-SYSTEM"
+const (
+	conceptMentions       = "mentions"
+	conceptMajorMentions  = "majorMentions"
+	classification        = "isClassifiedBy"
+	primaryClassification = "isPrimarilyClassifiedBy"
+	about                 = "about"
+	hasAuthor             = "hasAuthor"
+	relevanceURI          = "http://api.ft.com/scoringsystem/FT-RELEVANCE-SYSTEM"
+	confidenceURI         = "http://api.ft.com/scoringsystem/FT-CONFIDENCE-SYSTEM"
+)
 
 func transformScore(score int) float32 {
 	return float32(score) / float32(100.0)
