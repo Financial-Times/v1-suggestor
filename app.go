@@ -1,27 +1,24 @@
 package main
 
 import (
+	"encoding/base64"
+	"encoding/json"
+	"encoding/xml"
 	"net/http"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
-
-	"encoding/base64"
-	"encoding/json"
-	"encoding/xml"
-
 	"time"
-
 	"unicode/utf8"
 
 	"github.com/Financial-Times/message-queue-go-producer/producer"
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
+	status "github.com/Financial-Times/service-status-go/httphandlers"
 	"github.com/gorilla/mux"
 	"github.com/jawher/mow.cli"
 	"github.com/kr/pretty"
 	"github.com/twinj/uuid"
-	status "github.com/Financial-Times/service-status-go/httphandlers"
 )
 
 var messageProducer producer.MessageProducer
@@ -106,7 +103,7 @@ func main() {
 			infoLogger.Printf("\t %v", key)
 		}
 
-		go enableHealthChecks(srcConf, destConf)
+		go enableHealthChecks(&srcConf, &destConf)
 
 		initializeProducer(destConf)
 		readMessages(srcConf)
@@ -129,14 +126,11 @@ func setupTaxonomyHandlers() {
 	taxonomyHandlers["brands"] = BrandService{HandledTaxonomy: "Brands"}
 }
 
-func enableHealthChecks(srcConf consumer.QueueConfig, destConf producer.MessageProducerConfig) {
-	healthCheck := &Healthcheck{
-		client:   http.Client{},
-		srcConf:  srcConf,
-		destConf: destConf}
+func enableHealthChecks(srcConf *consumer.QueueConfig, destConf *producer.MessageProducerConfig) {
+	hc := NewHealthCheck(destConf, srcConf)
 	router := mux.NewRouter()
-	router.HandleFunc("/__health", healthCheck.checkHealth())
-	router.HandleFunc("/__gtg", healthCheck.gtg)
+	router.HandleFunc("/__health", hc.Health())
+	router.HandleFunc("/__gtg", status.NewGoodToGoHandler(hc.GTG))
 	router.HandleFunc(status.PingPath, status.PingHandler)
 	router.HandleFunc(status.PingPathDW, status.PingHandler)
 	router.HandleFunc(status.BuildInfoPath, status.BuildInfoHandler)
