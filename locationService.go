@@ -14,7 +14,7 @@ func (locationService LocationService) buildSuggestions(contentRef ContentRef) [
 	suggestions := []suggestion{}
 
 	for _, value := range locations {
-		suggestions = append(suggestions, buildSuggestion(value, locationURI, conceptMentions))
+		suggestions = append(suggestions, buildSuggestion(value, locationURI, conceptMajorMentions))
 	}
 
 	if contentRef.PrimaryTheme.CanonicalName != "" {

@@ -1,3 +1,5 @@
 .idea/
 v1-suggestor.exe
 /.project
+v1-suggestor
+vendor/*/
