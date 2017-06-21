@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"encoding/xml"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -66,6 +67,18 @@ func main() {
 	})
 
 	app.Action = func() {
+		httpClient := &http.Client{
+			Transport: &http.Transport{
+				Proxy: http.ProxyFromEnvironment,
+				DialContext: (&net.Dialer{
+					Timeout:   30 * time.Second,
+					KeepAlive: 30 * time.Second,
+				}).DialContext,
+				MaxIdleConnsPerHost:   20,
+				TLSHandshakeTimeout:   3 * time.Second,
+				ExpectContinueTimeout: 1 * time.Second,
+			},
+		}
 		srcConf := consumer.QueueConfig{
 			Addrs:                *sourceAddresses,
 			Group:                *sourceGroup,
@@ -89,10 +102,11 @@ func main() {
 			infoLogger.Printf("\t %v", key)
 		}
 
-		go enableHealthChecks(&srcConf, &destConf)
+		initializeProducer(destConf, httpClient)
+		messageConsumer := initializeConsumer(srcConf, httpClient)
+		readMessages(messageConsumer)
 
-		initializeProducer(destConf)
-		readMessages(srcConf)
+		go enableHealthChecks(messageConsumer)
 	}
 
 	app.Run(os.Args)
@@ -112,8 +126,8 @@ func setupTaxonomyHandlers() {
 	taxonomyHandlers["brands"] = BrandService{HandledTaxonomy: "Brands"}
 }
 
-func enableHealthChecks(srcConf *consumer.QueueConfig, destConf *producer.MessageProducerConfig) {
-	hc := NewHealthCheck(destConf, srcConf)
+func enableHealthChecks(messageConsumer consumer.MessageConsumer) {
+	hc := NewHealthCheck(messageProducer, messageConsumer)
 	router := mux.NewRouter()
 	router.HandleFunc("/__health", hc.Health())
 	router.HandleFunc("/__gtg", status.NewGoodToGoHandler(hc.GTG))
@@ -128,15 +142,18 @@ func enableHealthChecks(srcConf *consumer.QueueConfig, destConf *producer.Messag
 	}
 }
 
-func initializeProducer(config producer.MessageProducerConfig) {
-	messageProducer = producer.NewMessageProducer(config)
+func initializeProducer(config producer.MessageProducerConfig, client *http.Client) {
+	messageProducer = producer.NewMessageProducerWithHTTPClient(config, client)
 	infoLogger.Printf("[Startup] Producer: %# v", pretty.Formatter(messageProducer))
 }
 
-func readMessages(config consumer.QueueConfig) {
-	messageConsumer := consumer.NewConsumer(config, handleMessage, &http.Client{})
+func initializeConsumer(config consumer.QueueConfig, client *http.Client) consumer.MessageConsumer {
+	messageConsumer := consumer.NewConsumer(config, handleMessage, client)
 	infoLogger.Printf("[Startup] Consumer: %# v", pretty.Formatter(messageConsumer))
+	return messageConsumer
+}
 
+func readMessages(messageConsumer consumer.MessageConsumer) {
 	var consumerWaitGroup sync.WaitGroup
 	consumerWaitGroup.Add(1)
 
