@@ -118,9 +118,10 @@ func main() {
 
 		initializeProducer(destConf, httpClient)
 		messageConsumer := initializeConsumer(srcConf, httpClient)
-		readMessages(messageConsumer)
 
 		go enableHealthChecks(messageConsumer)
+
+		readMessages(messageConsumer)
 	}
 
 	app.Run(os.Args)
