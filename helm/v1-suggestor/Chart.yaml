@@ -1,4 +1,4 @@
 apiVersion: v1
-description: A Helm chart for Kubernetes
+description: v1-suggestor Helm chart for Kubernetes
 name: v1-suggestor
-version: 0.1.0
+version: 0.0.0

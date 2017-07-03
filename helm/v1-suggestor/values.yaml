@@ -7,7 +7,6 @@ service:
 replicaCount: 2
 image:
   repository: coco/v1-suggestor
-  version: "" # should be set explicitly at installation
   pullPolicy: Always
 resources:
   limits:
