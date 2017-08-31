@@ -47,12 +47,6 @@ func main() {
 		Desc:   "The topic to read the meassages from",
 		EnvVar: "SRC_TOPIC",
 	})
-	sourceQueue := app.String(cli.StringOpt{
-		Name:   "source-queue",
-		Value:  "",
-		Desc:   "Thew queue to read the messages from",
-		EnvVar: "SRC_QUEUE",
-	})
 	sourceConcurrentProcessing := app.Bool(cli.BoolOpt{
 		Name:   "source-concurrent-processing",
 		Value:  false,
@@ -70,12 +64,6 @@ func main() {
 		Value:  "",
 		Desc:   "The topic to write the concept suggestion to",
 		EnvVar: "DEST_TOPIC",
-	})
-	destinationQueue := app.String(cli.StringOpt{
-		Name:   "destination-queue",
-		Value:  "",
-		Desc:   "The queue used by the producer",
-		EnvVar: "DEST_QUEUE",
 	})
 
 	app.Action = func() {
@@ -95,14 +83,12 @@ func main() {
 			Addrs:                *sourceAddresses,
 			Group:                *sourceGroup,
 			Topic:                *sourceTopic,
-			Queue:                *sourceQueue,
 			ConcurrentProcessing: *sourceConcurrentProcessing,
 		}
 
 		destConf := producer.MessageProducerConfig{
 			Addr:  *destinationAddress,
 			Topic: *destinationTopic,
-			Queue: *destinationQueue,
 		}
 
 		initLogs(os.Stdout, os.Stdout, os.Stderr)
